@@ -1,0 +1,30 @@
+{
+  "name": "workshop-upload",
+  "version": "1.0.0",
+  "description": "Upload an addon to the Garry's Mod Steam Workshop.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gmod",
+    "workshop",
+    "publish",
+    "addon"
+  ],
+  "author": "dhkatz",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/download": "^8.0.5",
+    "@types/node": "^22.13.13",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0",
+    "commander": "^13.1.0",
+    "decompress": "^4.2.1",
+    "download": "^8.0.0"
+  }
+}

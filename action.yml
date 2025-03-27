@@ -1,0 +1,37 @@
+name: 'Workshop Upload'
+author: 'dhkatz'
+description: "Upload an addon to the Garry's Mod Steam Workshop."
+
+inputs:
+  username:
+    description: 'Steam username'
+    required: true
+    default: 'anonymous'
+  password:
+    description: 'Steam password'
+    required: false
+  totp:
+    description: 'Steam TOTP code'
+    required: false
+  vdf:
+    description: 'Steam account VDF'
+    required: false
+  id:
+    description: 'Addon ID'
+    required: true
+  changelog:
+    description: 'Addon changelog'
+    required: false
+  icon:
+    description: 'Addon icon'
+    required: false
+  dir:
+    description: 'Addon directory'
+    required: true
+
+runs:
+  using: 'node20'
+  pre: |
+    npm ci
+    npm run build
+  main: 'dist/index.js'
