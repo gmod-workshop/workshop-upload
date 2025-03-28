@@ -1,6 +1,10 @@
-name: "Steam Workshop Upload"
+name: "Garry's Mod Workshop Upload"
 author: 'dhkatz'
 description: "Upload an addon to the Garry's Mod Steam Workshop."
+
+branding:
+  icon: 'arrow-up-circle'
+  color: 'blue'
 
 inputs:
   username:
