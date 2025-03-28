@@ -7,6 +7,7 @@ inputs:
     description: 'Steam username'
     required: true
     default: 'anonymous'
+
   password:
     description: 'Steam password'
     required: false
@@ -16,15 +17,25 @@ inputs:
   vdf:
     description: 'Steam account VDF'
     required: false
+
   id:
     description: 'Addon ID'
     required: true
+
   changelog:
     description: 'Addon changelog'
     required: false
+
   icon:
     description: 'Addon icon'
     required: false
+  title:
+    description: 'Addon title'
+    required: false
+  description:
+    description: 'Addon description'
+    required: false
+
   dir:
     description: 'Addon directory'
     required: true

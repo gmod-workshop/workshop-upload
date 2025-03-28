@@ -23,6 +23,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
+    "@steamdown/core": "^1.0.0-beta.1",
     "commander": "^13.1.0",
     "decompress": "^4.2.1",
     "download": "^8.0.0"
