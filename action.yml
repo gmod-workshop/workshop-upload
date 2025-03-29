@@ -40,7 +40,7 @@ inputs:
     description: 'Addon description'
     required: false
 
-  dir:
+  folder:
     description: 'Addon directory'
     required: true
 

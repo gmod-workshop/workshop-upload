@@ -21,13 +21,19 @@ async function run() {
     const changelog = getInput('changelog');
     const dir = getInput('folder', { required: true });
 
+    console.log('Downloading SteamCMD...');
     await steam.download();
+    console.log('Updating SteamCMD...');
     await steam.update();
+    console.log('Logging in to Steam...');
     await steam.login(username, { password, totp, vdf });
 
+    console.log('Downloading gmad...');
     await gmad.download();
+    console.log('Creating addon...');
     const folder = await gmad.create(dir, './output/addon.gma');
 
+    console.log('Publishing addon...');
     await steam.publish(username, {
         id,
         appid: "4000",
@@ -37,6 +43,8 @@ async function run() {
         title,
         description,
     });
+
+    console.log('Done!');
 }
 
 run();
