@@ -18,7 +18,7 @@ export async function create(dir: string, out: string): Promise<string> {
 
     await mkdir(out, { recursive: true });
 
-    const code = await command("./gmad/fastgmad.exe", "create", "-folder", dir, "-out", out);
+    const code = await command("./gmad/fastgmad.exe", "create", "-warninvalid", "-folder", dir, "-out", out);
     if (code !== 0) {
         throw new Error("Failed to create addon");
     }
