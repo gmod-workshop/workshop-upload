@@ -1,6 +1,6 @@
 import { program } from "commander";
-import * as steam from "./steam";
-import * as gmad from "./gmad";
+import * as steam from "./steam.js";
+import * as gmad from "./gmad.js";
 
 interface ProgramOptions {
     username: string;

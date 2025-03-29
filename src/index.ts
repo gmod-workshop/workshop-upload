@@ -1,25 +1,25 @@
-import core from "@actions/core";
-import * as steam from "./steam";
-import * as gmad from "./gmad";
+import { getInput } from "@actions/core";
+import * as steam from "./steam.js";
+import * as gmad from "./gmad.js";
 
 async function run() {
-    const username = core.getInput('username', { required: true, trimWhitespace: true });
-    const password = core.getInput('password', { trimWhitespace: true });
-    const totp = core.getInput('totp', { trimWhitespace: true });
-    const vdf = core.getInput('vdf');
+    const username = getInput('username', { required: true, trimWhitespace: true });
+    const password = getInput('password', { trimWhitespace: true });
+    const totp = getInput('totp', { trimWhitespace: true });
+    const vdf = getInput('vdf');
 
     if (!password && !totp && !vdf) {
         throw new Error('No login method provided');
     }
 
-    const id = core.getInput('id', { required: false, trimWhitespace: true });
+    const id = getInput('id', { required: false, trimWhitespace: true });
 
-    const title = core.getInput('title', { trimWhitespace: true });
-    const description = core.getInput('description', { trimWhitespace: false });
-    const icon = core.getInput('icon', { trimWhitespace: true });
+    const title = getInput('title', { trimWhitespace: true });
+    const description = getInput('description', { trimWhitespace: false });
+    const icon = getInput('icon', { trimWhitespace: true });
 
-    const changelog = core.getInput('changelog');
-    const dir = core.getInput('folder', { required: true });
+    const changelog = getInput('changelog');
+    const dir = getInput('folder', { required: true });
 
     await steam.download();
     await steam.update();

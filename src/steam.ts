@@ -2,8 +2,8 @@ import decompress from "decompress";
 import get from "download";
 import { access, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { command } from "./command";
-import { convert } from "./bbcode";
+import { command } from "./command.js";
+import { convert } from "./bbcode.js";
 
 export interface PublishOptions {
     id?: string;

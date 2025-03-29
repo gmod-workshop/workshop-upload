@@ -2,7 +2,7 @@ import { access, mkdir } from "fs/promises";
 import decompress from "decompress";
 import path from "path";
 import get from "download";
-import { command } from "./command";
+import { command } from "./command.js";
 
 /**
  * Create a GMA file for an addon.

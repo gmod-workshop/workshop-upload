@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2022",            // Modern Node.js supports recent ECMAScript features
-    "module": "CommonJS",          // Node.js uses CommonJS modules
+    "target": "ES2018",            // Modern Node.js supports recent ECMAScript features
+    "module": "Node16",          // Node.js uses CommonJS modules
     "rootDir": "./src",           // Source files location
     "outDir": "./dist",           // Output directory for compiled files
     "strict": true,               // Enable all strict type checking options
