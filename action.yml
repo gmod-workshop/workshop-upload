@@ -46,7 +46,4 @@ inputs:
 
 runs:
   using: 'node20'
-  pre: |
-    npm ci
-    npm run build
   main: 'dist/index.js'
