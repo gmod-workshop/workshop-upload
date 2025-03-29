@@ -48664,11 +48664,17 @@ async function run() {
     const icon = (0,core.getInput)('icon', { trimWhitespace: true });
     const changelog = (0,core.getInput)('changelog');
     const dir = (0,core.getInput)('folder', { required: true });
+    console.log('Downloading SteamCMD...');
     await steam_download();
+    console.log('Updating SteamCMD...');
     await update();
+    console.log('Logging in to Steam...');
     await login(username, { password, totp, vdf });
+    console.log('Downloading gmad...');
     await gmad_download();
+    console.log('Creating addon...');
     const folder = await create(dir, './output/addon.gma');
+    console.log('Publishing addon...');
     await publish(username, {
         id,
         appid: "4000",
@@ -48678,6 +48684,7 @@ async function run() {
         title,
         description,
     });
+    console.log('Done!');
 }
 run();
 
