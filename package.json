@@ -1,10 +1,10 @@
 {
   "name": "workshop-upload",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Upload an addon to the Garry's Mod Steam Workshop.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "ncc build src/index.ts -o dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -18,6 +18,7 @@
   "devDependencies": {
     "@types/download": "^8.0.5",
     "@types/node": "^22.13.13",
+    "@vercel/ncc": "^0.38.3",
     "typescript": "^5.8.2"
   },
   "dependencies": {
