@@ -48566,12 +48566,12 @@ const defaultPlatform = (typeof process === 'object' && process
         process.env.__MINIMATCH_TESTING_PLATFORM__) ||
         process.platform
     : 'posix');
-const esm_path = {
+const path = {
     win32: { sep: '\\' },
     posix: { sep: '/' },
 };
 /* c8 ignore stop */
-const sep = defaultPlatform === 'win32' ? esm_path.win32.sep : esm_path.posix.sep;
+const sep = defaultPlatform === 'win32' ? path.win32.sep : path.posix.sep;
 minimatch.sep = sep;
 const GLOBSTAR = Symbol('globstar **');
 minimatch.GLOBSTAR = GLOBSTAR;
@@ -55389,7 +55389,7 @@ const sync = Object.assign(globSync, {
     stream: globStreamSync,
     iterate: globIterateSync,
 });
-const esm_glob = Object.assign(glob_, {
+const glob = Object.assign(glob_, {
     glob: glob_,
     globSync,
     sync,
@@ -55406,7 +55406,7 @@ const esm_glob = Object.assign(glob_, {
     escape: escape_escape,
     unescape: unescape_unescape,
 });
-esm_glob.glob = esm_glob;
+glob.glob = glob;
 //# sourceMappingURL=index.js.map
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
@@ -56578,10 +56578,7 @@ async function authenticated(username) {
     if (!exists) {
         return false;
     }
-    const [filepath] = await esm_glob('**/config/config.vdf', { absolute: true });
-    if (!filepath) {
-        return false;
-    }
+    const filepath = await cache();
     try {
         const config = await (0,promises_namespaceObject.readFile)(filepath, "utf-8");
         return config.includes(`"${username}"`);
@@ -56598,9 +56595,8 @@ async function authenticated(username) {
  */
 async function login(username, credentials = {}) {
     console.log("Attempting to login to Steam...");
-    // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const [config] = await esm_glob('**/config/config.vdf', { absolute: true, dot: true });
+    const config = await cache();
     if (!config) {
         console.log("\tNo cached credentials found");
     }
@@ -56694,15 +56690,15 @@ async function steam_download() {
     }
     throw new Error("Unsupported platform");
 }
-async function config() {
+async function cache() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
-        if (await access(filepath).then(() => true, () => false)) {
+        let filepath = external_path_default().resolve('steamcmd', 'config', 'config.vdf');
+        if (await (0,promises_namespaceObject.access)(filepath).then(() => true, () => false)) {
             return filepath;
         }
-        const home = path.resolve(process.env['USERPROFILE']);
-        if (!await access(home).then(() => true, () => false)) {
+        const home = external_path_default().resolve(process.env['USERPROFILE']);
+        if (!await (0,promises_namespaceObject.access)(home).then(() => true, () => false)) {
             throw new Error("Failed to find Steam config");
         }
         [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });
@@ -56712,12 +56708,12 @@ async function config() {
         return filepath;
     }
     else if (os === 'linux' || os === 'macos') {
-        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
-        if (await access(filepath).then(() => true, () => false)) {
+        let filepath = external_path_default().resolve('steamcmd', 'config', 'config.vdf');
+        if (await (0,promises_namespaceObject.access)(filepath).then(() => true, () => false)) {
             return filepath;
         }
-        const home = path.resolve(process.env['HOME']);
-        if (!await access(home).then(() => true, () => false)) {
+        const home = external_path_default().resolve(process.env['HOME']);
+        if (!await (0,promises_namespaceObject.access)(home).then(() => true, () => false)) {
             throw new Error("Failed to find Steam config");
         }
         [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });

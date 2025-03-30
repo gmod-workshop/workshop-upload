@@ -108,10 +108,7 @@ export async function authenticated(username: string): Promise<boolean> {
         return false;
     }
 
-    const [filepath] = await glob('**/config/config.vdf', { absolute: true });
-    if (!filepath) {
-        return false;
-    }
+    const filepath = await cache();
 
     try {
         const config = await readFile(filepath, "utf-8");
@@ -130,9 +127,8 @@ export async function authenticated(username: string): Promise<boolean> {
 export async function login(username: string, credentials: { password?: string, totp?: string, vdf?: string } = {}): Promise<void> {
     console.log("Attempting to login to Steam...");
 
-    // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const [config] = await glob('**/config/config.vdf', { absolute: true, dot: true });
+    const config = await cache();
     if (!config) {
         console.log("\tNo cached credentials found");
     } else {
@@ -251,7 +247,7 @@ export async function download(): Promise<string> {
     throw new Error("Unsupported platform");
 }
 
-export async function config(): Promise<string> {
+export async function cache(): Promise<string> {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
         let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
