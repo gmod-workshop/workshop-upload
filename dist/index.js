@@ -48543,7 +48543,7 @@ async function publish(username, options) {
         fields.set("visibility", options.visibility.toString());
     }
     const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
-    await (0,promises_namespaceObject.writeFile)('addon.vdf', vdf.trim());
+    await (0,promises_namespaceObject.writeFile)(external_path_default().resolve('./addon.vdf'), vdf.trim());
     const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('./addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
@@ -48570,6 +48570,7 @@ async function authenticated(username) {
  * @param credentials Steam credentials. Optional if login credentials are already cached.
  */
 async function login(username, credentials = {}) {
+    console.log("Attempting to login to Steam...");
     const steamcmd = await steam_location();
     const exists = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
     if (!exists) {
@@ -48580,18 +48581,21 @@ async function login(username, credentials = {}) {
         if (!password) {
             throw new Error("TOTP requires a password");
         }
+        console.log("\tUsing TOTP");
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     }
     else if (password) {
+        console.log("\tUsing password");
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     }
     else if (vdf) {
+        console.log("\tUsing VDF");
         await (0,promises_namespaceObject.mkdir)(external_path_default().resolve(process.cwd(), "steamcmd", "config"), { recursive: true });
         await (0,promises_namespaceObject.writeFile)(external_path_default().resolve(process.cwd(), "steamcmd", "config", "config.vdf"), Buffer.from(vdf, "base64"));
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
@@ -48600,11 +48604,12 @@ async function login(username, credentials = {}) {
         }
     }
     else {
-        if (await authenticated(username)) {
-            return;
+        console.log("\tUsing cached credentials");
+        if (!(await authenticated(username))) {
+            throw new Error("No login method provided");
         }
-        throw new Error("No login method provided");
     }
+    console.log("Successfully logged in to Steam");
 }
 /**
  * Update SteamCMD. This does not require login.

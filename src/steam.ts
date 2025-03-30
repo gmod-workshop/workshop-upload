@@ -94,7 +94,7 @@ export async function publish(username: string, options: PublishOptions): Promis
 
     const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
 
-    await writeFile('addon.vdf', vdf.trim());
+    await writeFile(path.resolve('./addon.vdf'), vdf.trim());
 
     const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('./addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
@@ -124,6 +124,8 @@ export async function authenticated(username: string): Promise<boolean> {
  * @param credentials Steam credentials. Optional if login credentials are already cached. 
  */
 export async function login(username: string, credentials: { password?: string, totp?: string, vdf?: string } = {}): Promise<void> {
+    console.log("Attempting to login to Steam...");
+
     const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
@@ -137,16 +139,22 @@ export async function login(username: string, credentials: { password?: string, 
             throw new Error("TOTP requires a password");
         }
 
+        console.log("\tUsing TOTP");
+
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     } else if (password) {
+        console.log("\tUsing password");
+
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     } else if (vdf) {
+        console.log("\tUsing VDF");
+
         await mkdir(path.resolve(process.cwd(), "steamcmd", "config"), { recursive: true });
         await writeFile(path.resolve(process.cwd(), "steamcmd", "config", "config.vdf"), Buffer.from(vdf, "base64"));
 
@@ -155,12 +163,14 @@ export async function login(username: string, credentials: { password?: string, 
             throw new Error("Failed to login to Steam");
         }
     } else {
-        if (await authenticated(username)) {
-            return;
-        }
+        console.log("\tUsing cached credentials");
 
-        throw new Error("No login method provided");
+        if (!(await authenticated(username))) {
+            throw new Error("No login method provided");
+        }
     }
+
+    console.log("Successfully logged in to Steam");
 }
 
 /**
