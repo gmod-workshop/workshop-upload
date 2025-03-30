@@ -3,6 +3,7 @@ import decompress from "decompress";
 import path from "path";
 import get from "download";
 import { command } from "./command.js";
+import { glob } from "glob";
 
 /**
  * Create a GMA file for an addon.
@@ -52,11 +53,17 @@ export async function download(): Promise<string> {
 export async function location(): Promise<string> {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        return path.resolve(process.cwd(), "gmad", "fastgmad.exe");
-    } else if (os === 'linux') {
-        return path.resolve(process.cwd(), "gmad", "fastgmad");
-    } else if (os === 'macos') {
-        return path.resolve(process.cwd(), "gmad", "fastgmad");
+        const [gmad] = await glob('**/fastgmad.exe', { nodir: true, absolute: true });
+        if (!gmad) {
+            throw new Error("Failed to find gmad executable");
+        }
+        return gmad;
+    } else if (os === 'linux' || os === 'macos') {
+        const [gmad] = await glob('**/fastgmad', { nodir: true, absolute: true });
+        if (!gmad) {
+            throw new Error("Failed to find gmad executable");
+        }
+        return gmad;
     }
 
     throw new Error("Unsupported platform");

@@ -1,6 +1,7 @@
 import decompress from "decompress";
 import get from "download";
 import { access, readFile, writeFile, mkdir, readdir } from "fs/promises";
+import { glob } from 'glob';
 import path from "path";
 import { command } from "./command.js";
 import { convert } from "./bbcode.js";
@@ -34,11 +35,19 @@ export interface PublishOptions {
 export async function location(): Promise<string> {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        return path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
-    } else if (os === 'linux') {
-        return path.resolve(process.cwd(), "steamcmd", "steamcmd.sh");
-    } else if (os === 'macos') {
-        return path.resolve(process.cwd(), "steamcmd", "steamcmd.sh");
+        const [steamcmd] = await glob('**/steamcmd.exe', { nodir: true, absolute: true });
+        if (!steamcmd) {
+            throw new Error("Failed to find steamcmd executable");
+        }
+
+        return steamcmd;
+    } else if (os === 'linux' || os === 'macos') {
+        const [steamcmd] = await glob('**/steamcmd.sh', { nodir: true, absolute: true });
+        if (!steamcmd) {
+            throw new Error("Failed to find steamcmd executable");
+        }
+
+        return steamcmd;
     }
 
     throw new Error("Unsupported platform");
@@ -109,8 +118,13 @@ export async function authenticated(username: string): Promise<boolean> {
         return false;
     }
 
+    const [filepath] = await glob('**/config/config.vdf', { absolute: true });
+    if (!filepath) {
+        return false;
+    }
+
     try {
-        const config = await readFile(path.resolve(process.cwd(), "steamcmd", "config", "config.vdf"), "utf-8");
+        const config = await readFile(filepath, "utf-8");
         return config.includes(`"${username}"`);
     } catch {
         return false;
@@ -128,9 +142,11 @@ export async function login(username: string, credentials: { password?: string, 
 
     // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const files = (await readdir(path.resolve(process.env.HOME!!, ".steam"), { withFileTypes: true })).filter(f => f.isDirectory()).map(f => f.name);
-    for (const file of files) {
-        console.log(`\t\t${file}`);
+    const [config] = await glob('**/config/config.vdf', { absolute: true });
+    if (!config) {
+        console.log("\tNo cached credentials found");
+    } else {
+        console.log("\tCached credentials found");
     }
 
     const steamcmd = await location();
@@ -162,8 +178,7 @@ export async function login(username: string, credentials: { password?: string, 
     } else if (vdf) {
         console.log("\tUsing VDF");
 
-        await mkdir(path.resolve(process.cwd(), "steamcmd", "config"), { recursive: true });
-        await writeFile(path.resolve(process.cwd(), "steamcmd", "config", "config.vdf"), Buffer.from(vdf, "base64"));
+        await writeFile(config, Buffer.from(vdf, "base64"));
 
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
         if (code !== 0 && code !== 7) {
@@ -225,8 +240,6 @@ export async function download(): Promise<string> {
         if (!executable) {
             throw new Error("Failed to find steamcmd executable");
         }
-
-        console.log(`SteamCMD path: ${path.resolve(output, executable.path)}`);
     
         return path.resolve(output, executable.path);
     } else if (os === 'macos') {
