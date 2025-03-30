@@ -56816,7 +56816,7 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad_download();
     console.log('Creating addon...');
-    const addon = await create(dir, external_path_default().resolve(external_os_default().tmpdir(), 'addon.gma'));
+    const addon = await create(dir, external_path_default().resolve(external_os_default().tmpdir(), 'addon', 'addon.gma'));
     const folder = external_path_default().dirname(addon);
     console.log('Publishing addon...');
     await publish(username, {

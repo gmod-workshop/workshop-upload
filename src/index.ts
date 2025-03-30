@@ -33,7 +33,7 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad.download();
     console.log('Creating addon...');
-    const addon = await gmad.create(dir, path.resolve(os.tmpdir(), 'addon.gma'));
+    const addon = await gmad.create(dir, path.resolve(os.tmpdir(), 'addon', 'addon.gma'));
     const folder = path.dirname(addon);
 
     console.log('Publishing addon...');
