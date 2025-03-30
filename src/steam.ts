@@ -225,6 +225,8 @@ export async function download(): Promise<string> {
         if (!executable) {
             throw new Error("Failed to find steamcmd executable");
         }
+
+        console.log(`SteamCMD path: ${path.resolve(output, executable.path)}`);
     
         return path.resolve(output, executable.path);
     } else if (os === 'macos') {

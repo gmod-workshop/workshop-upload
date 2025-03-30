@@ -48651,6 +48651,7 @@ async function steam_download() {
         if (!executable) {
             throw new Error("Failed to find steamcmd executable");
         }
+        console.log(`SteamCMD path: ${external_path_default().resolve(output, executable.path)}`);
         return external_path_default().resolve(output, executable.path);
     }
     else if (os === 'macos') {
