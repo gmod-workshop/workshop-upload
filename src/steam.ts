@@ -164,17 +164,51 @@ export async function update(): Promise<void> {
 }
 
 export async function download(): Promise<string> {
-    const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
+    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
 
-    const output = path.resolve(process.cwd(), "steamcmd");
+    if (os === 'windows') {
+        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
 
-    const files = await decompress(data, output);
+        const output = path.resolve(process.cwd(), "steamcmd");
+    
+        const files = await decompress(data, output);
+    
+        const executable = files.find(f => f.path === "steamcmd.exe");
+    
+        if (!executable) {
+            throw new Error("Failed to find steamcmd executable");
+        }
+    
+        return path.resolve(output, executable.path);
+    } else if (os === 'linux')  {
+        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
 
-    const executable = files.find(f => f.path === "steamcmd.exe");
-
-    if (!executable) {
-        throw new Error("Failed to find steamcmd executable");
+        const output = path.resolve(process.cwd(), "steamcmd");
+    
+        const files = await decompress(data, output);
+    
+        const executable = files.find(f => f.path === "steamcmd.sh");
+    
+        if (!executable) {
+            throw new Error("Failed to find steamcmd executable");
+        }
+    
+        return path.resolve(output, executable.path);
+    } else if (os === 'macos') {
+        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
+        
+        const output = path.resolve(process.cwd(), "steamcmd");
+    
+        const files = await decompress(data, output);
+    
+        const executable = files.find(f => f.path === "steamcmd.sh");
+    
+        if (!executable) {
+            throw new Error("Failed to find steamcmd executable");
+        }
+    
+        return path.resolve(output, executable.path);
     }
 
-    return path.resolve(output, executable.path);
+    throw new Error("Unsupported platform");
 }
