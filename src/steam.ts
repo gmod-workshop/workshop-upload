@@ -69,7 +69,7 @@ export async function publish(username: string, options: PublishOptions): Promis
     fields.set("publishedfileid", options.id ?? "0");
 
     if (options.changelog) {
-        fields.set("changenote", convert(options.changelog));
+        fields.set("changenote", convert(options.changelog).replace(/"/g, '\\"'));
     }
 
     if (options.icon) {
@@ -85,7 +85,7 @@ export async function publish(username: string, options: PublishOptions): Promis
     }
 
     if (options.description) {
-        fields.set("description", convert(options.description));
+        fields.set("description", convert(options.description).replace(/"/g, '\\"'));
     }
 
     if (options.visibility) {

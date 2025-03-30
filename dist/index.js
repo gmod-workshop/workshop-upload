@@ -56550,7 +56550,7 @@ async function publish(username, options) {
     fields.set("contentfolder", options.folder);
     fields.set("publishedfileid", (_a = options.id) !== null && _a !== void 0 ? _a : "0");
     if (options.changelog) {
-        fields.set("changenote", convert(options.changelog));
+        fields.set("changenote", convert(options.changelog).replace(/"/g, '\\"'));
     }
     if (options.icon) {
         fields.set("previewfile", options.icon);
@@ -56564,7 +56564,7 @@ async function publish(username, options) {
         fields.set("title", options.title);
     }
     if (options.description) {
-        fields.set("description", convert(options.description));
+        fields.set("description", convert(options.description).replace(/"/g, '\\"'));
     }
     if (options.visibility) {
         fields.set("visibility", options.visibility.toString());
