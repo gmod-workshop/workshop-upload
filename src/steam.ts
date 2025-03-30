@@ -32,6 +32,12 @@ export interface PublishOptions {
 }
 
 export async function publish(username: string, options: PublishOptions): Promise<void> {
+    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await access(steamcmd).then(() => true, () => false);
+    if (!exists) {
+        await download();
+    }
+
     if (!await authenticated(username)) {
         throw new Error("Not authenticated");
     }
@@ -77,20 +83,21 @@ export async function publish(username: string, options: PublishOptions): Promis
 
     await writeFile('addon.vdf', vdf.trim());
 
-    const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('./addon.vdf'), "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('./addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
     }
 }
 
 export async function authenticated(username: string): Promise<boolean> {
-    const exists = await access("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
         return false;
     }
 
     try {
-        const config = await readFile("./steamcmd/config/config.vdf", "utf-8");
+        const config = await readFile(path.resolve(process.cwd(), "steamcmd", "config", "config.vdf"), "utf-8");
         return config.includes(`"${username}"`);
     } catch {
         return false;
@@ -104,7 +111,8 @@ export async function authenticated(username: string): Promise<boolean> {
  * @param credentials Steam credentials. Optional if login credentials are already cached. 
  */
 export async function login(username: string, credentials: { password?: string, totp?: string, vdf?: string } = {}): Promise<void> {
-    const exists = await access("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
         await download();
     }
@@ -116,17 +124,17 @@ export async function login(username: string, credentials: { password?: string, 
             throw new Error("TOTP requires a password");
         }
 
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     } else if (password) {
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     } else if (vdf) {
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
@@ -143,12 +151,13 @@ export async function login(username: string, credentials: { password?: string, 
  * Update SteamCMD. This does not require login.
  */
 export async function update(): Promise<void> {
-    const exits = await access("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exits = await access(steamcmd).then(() => true, () => false);
     if (!exits) {
         await download();
     }
 
-    const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", "anonymous", "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", "anonymous", "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to update SteamCMD");
     }
@@ -157,7 +166,9 @@ export async function update(): Promise<void> {
 export async function download(): Promise<string> {
     const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
 
-    const files = await decompress(data, "./steamcmd");
+    const output = path.resolve(process.cwd(), "steamcmd");
+
+    const files = await decompress(data, output);
 
     const executable = files.find(f => f.path === "steamcmd.exe");
 
@@ -165,5 +176,5 @@ export async function download(): Promise<string> {
         throw new Error("Failed to find steamcmd executable");
     }
 
-    return path.resolve("./steamcmd", executable.path);
+    return path.resolve(output, executable.path);
 }

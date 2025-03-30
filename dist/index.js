@@ -48491,6 +48491,11 @@ function convert(markdown) {
 
 async function publish(username, options) {
     var _a;
+    const steamcmd = external_path_default().resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
+    if (!exists) {
+        await steam_download();
+    }
     if (!await authenticated(username)) {
         throw new Error("Not authenticated");
     }
@@ -48526,18 +48531,19 @@ async function publish(username, options) {
     }
     const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
     await (0,promises_namespaceObject.writeFile)('addon.vdf', vdf.trim());
-    const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('./addon.vdf'), "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('./addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
     }
 }
 async function authenticated(username) {
-    const exists = await (0,promises_namespaceObject.access)("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = external_path_default().resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
     if (!exists) {
         return false;
     }
     try {
-        const config = await (0,promises_namespaceObject.readFile)("./steamcmd/config/config.vdf", "utf-8");
+        const config = await (0,promises_namespaceObject.readFile)(external_path_default().resolve(process.cwd(), "steamcmd", "config", "config.vdf"), "utf-8");
         return config.includes(`"${username}"`);
     }
     catch (_a) {
@@ -48551,7 +48557,8 @@ async function authenticated(username) {
  * @param credentials Steam credentials. Optional if login credentials are already cached.
  */
 async function login(username, credentials = {}) {
-    const exists = await (0,promises_namespaceObject.access)("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = external_path_default().resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exists = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
     if (!exists) {
         await steam_download();
     }
@@ -48560,19 +48567,19 @@ async function login(username, credentials = {}) {
         if (!password) {
             throw new Error("TOTP requires a password");
         }
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+set_steam_guard_code", totp, "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     }
     else if (password) {
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, password, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
     }
     else if (vdf) {
-        const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
+        const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
         }
@@ -48588,23 +48595,25 @@ async function login(username, credentials = {}) {
  * Update SteamCMD. This does not require login.
  */
 async function update() {
-    const exits = await (0,promises_namespaceObject.access)("./steamcmd/steamcmd.exe").then(() => true, () => false);
+    const steamcmd = external_path_default().resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const exits = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
     if (!exits) {
         await steam_download();
     }
-    const code = await command("./steamcmd/steamcmd.exe", "+@ShutdownOnFailedCommand", "1", "+login", "anonymous", "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", "anonymous", "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to update SteamCMD");
     }
 }
 async function steam_download() {
     const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
-    const files = await decompress_default()(data, "./steamcmd");
+    const output = external_path_default().resolve(process.cwd(), "steamcmd");
+    const files = await decompress_default()(data, output);
     const executable = files.find(f => f.path === "steamcmd.exe");
     if (!executable) {
         throw new Error("Failed to find steamcmd executable");
     }
-    return external_path_default().resolve("./steamcmd", executable.path);
+    return external_path_default().resolve(output, executable.path);
 }
 
 ;// CONCATENATED MODULE: ./src/gmad.ts
@@ -48620,12 +48629,13 @@ async function steam_download() {
  * @returns The absolute path to the addon.
  */
 async function create(dir, out) {
-    const exists = await (0,promises_namespaceObject.access)("./gmad/fastgmad.exe").then(() => true, () => false);
+    const gmad = external_path_default().resolve(process.cwd(), "gmad", "fastgmad.exe");
+    const exists = await (0,promises_namespaceObject.access)(gmad).then(() => true, () => false);
     if (!exists) {
         await gmad_download();
     }
     await (0,promises_namespaceObject.mkdir)(out, { recursive: true });
-    const code = await command("./gmad/fastgmad.exe", "create", "-warninvalid", "-folder", dir, "-out", out);
+    const code = await command(gmad, "create", "-warninvalid", "-folder", dir, "-out", out);
     if (code !== 0) {
         throw new Error("Failed to create addon");
     }
@@ -48638,15 +48648,17 @@ async function create(dir, out) {
 async function gmad_download() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     const data = await download_default()(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${os}.zip`);
-    const files = await decompress_default()(data, "./gmad");
+    const output = external_path_default().resolve(process.cwd(), "gmad");
+    const files = await decompress_default()(data, output);
     const executable = files.find(f => f.path === "fastgmad.exe");
     if (!executable) {
         throw new Error("Failed to find gmad executable");
     }
-    return external_path_default().resolve("./gmad", executable.path);
+    return external_path_default().resolve(output, executable.path);
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -48673,7 +48685,7 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad_download();
     console.log('Creating addon...');
-    const folder = await create(dir, './output/addon.gma');
+    const folder = await create(dir, external_path_default().resolve('./output/addon.gma'));
     console.log('Publishing addon...');
     await publish(username, {
         id,

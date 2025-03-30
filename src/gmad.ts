@@ -11,14 +11,15 @@ import { command } from "./command.js";
  * @returns The absolute path to the addon.
  */
 export async function create(dir: string, out: string): Promise<string> {
-    const exists = await access("./gmad/fastgmad.exe").then(() => true, () => false);
+    const gmad = path.resolve(process.cwd(), "gmad", "fastgmad.exe");
+    const exists = await access(gmad).then(() => true, () => false);
     if (!exists) {
         await download();
     }
 
     await mkdir(out, { recursive: true });
 
-    const code = await command("./gmad/fastgmad.exe", "create", "-warninvalid", "-folder", dir, "-out", out);
+    const code = await command(gmad, "create", "-warninvalid", "-folder", dir, "-out", out);
     if (code !== 0) {
         throw new Error("Failed to create addon");
     }
@@ -35,7 +36,9 @@ export async function download(): Promise<string> {
 
     const data = await get(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${os}.zip`);
 
-    const files = await decompress(data, "./gmad");
+    const output = path.resolve(process.cwd(), "gmad");
+
+    const files = await decompress(data, output);
 
     const executable = files.find(f => f.path === "fastgmad.exe");
 
@@ -43,5 +46,5 @@ export async function download(): Promise<string> {
         throw new Error("Failed to find gmad executable");
     }
 
-    return path.resolve("./gmad", executable.path);
+    return path.resolve(output, executable.path);
 }
