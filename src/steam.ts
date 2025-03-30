@@ -3,6 +3,7 @@ import get from "download";
 import { access, readFile, writeFile, mkdir, readdir } from "fs/promises";
 import { glob } from 'glob';
 import path from "path";
+import os from "os";
 import { command } from "./command.js";
 import { convert } from "./bbcode.js";
 
@@ -33,11 +34,11 @@ export interface PublishOptions {
 }
 
 export async function location(): Promise<string> {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        return path.resolve('steamcmd', 'steamcmd.exe')
-    } else if (os === 'linux' || os === 'macos') {
-        return path.resolve('steamcmd', 'steamcmd.sh')
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        return path.resolve(os.tmpdir(), 'steamcmd', 'steamcmd.exe')
+    } else if (platform === 'linux' || platform === 'macos') {
+        return path.resolve(os.tmpdir(), 'steamcmd', 'steamcmd.sh')
     }
 
     throw new Error("Unsupported platform");
@@ -198,12 +199,12 @@ export async function update(): Promise<void> {
 }
 
 export async function download(): Promise<string> {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
 
-    if (os === 'windows') {
+    if (platform === 'windows') {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
 
-        const output = path.resolve("steamcmd");
+        const output = path.resolve(os.tmpdir(), 'steamcmd');
     
         const files = await decompress(data, output);
     
@@ -214,10 +215,10 @@ export async function download(): Promise<string> {
         }
     
         return path.resolve(output, executable.path);
-    } else if (os === 'linux')  {
+    } else if (platform === 'linux')  {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
 
-        const output = path.resolve("steamcmd");
+        const output = path.resolve(os.tmpdir(), 'steamcmd');
     
         const files = await decompress(data, output);
     
@@ -228,10 +229,10 @@ export async function download(): Promise<string> {
         }
     
         return path.resolve(output, executable.path);
-    } else if (os === 'macos') {
+    } else if (platform === 'macos') {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
         
-        const output = path.resolve("steamcmd");
+        const output = path.resolve(os.tmpdir(), 'steamcmd');
     
         const files = await decompress(data, output);
     
@@ -252,9 +253,9 @@ export async function download(): Promise<string> {
  * @returns The absolute path to the Steam credentials file.
  */
 export async function configLocation(): Promise<string> {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        let filepath = path.resolve(os.tmpdir(), 'steamcmd', 'config', 'config.vdf');
         if (await access(filepath).then(() => true, () => false)) {
             return filepath;
         }
@@ -270,8 +271,8 @@ export async function configLocation(): Promise<string> {
         }
 
         return filepath;
-    } else if (os === 'linux' || os === 'macos') {
-        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+    } else if (platform === 'linux' || platform === 'macos') {
+        let filepath = path.resolve(os.tmpdir(), 'steamcmd', 'config', 'config.vdf');
         if (await access(filepath).then(() => true, () => false)) {
             return filepath;
         }

@@ -55411,6 +55411,9 @@ glob.glob = glob;
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
 var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(857);
+var external_os_default = /*#__PURE__*/__nccwpck_require__.n(external_os_);
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(5317);
 ;// CONCATENATED MODULE: ./src/command.ts
@@ -56515,13 +56518,14 @@ function convert(markdown) {
 
 
 
+
 async function steam_location() {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        return external_path_default().resolve('steamcmd', 'steamcmd.exe');
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        return external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd', 'steamcmd.exe');
     }
-    else if (os === 'linux' || os === 'macos') {
-        return external_path_default().resolve('steamcmd', 'steamcmd.sh');
+    else if (platform === 'linux' || platform === 'macos') {
+        return external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd', 'steamcmd.sh');
     }
     throw new Error("Unsupported platform");
 }
@@ -56657,10 +56661,10 @@ async function update() {
     }
 }
 async function steam_download() {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
-        const output = external_path_default().resolve("steamcmd");
+        const output = external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd');
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.exe");
         if (!executable) {
@@ -56668,9 +56672,9 @@ async function steam_download() {
         }
         return external_path_default().resolve(output, executable.path);
     }
-    else if (os === 'linux') {
+    else if (platform === 'linux') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
-        const output = external_path_default().resolve("steamcmd");
+        const output = external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd');
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.sh");
         if (!executable) {
@@ -56678,9 +56682,9 @@ async function steam_download() {
         }
         return external_path_default().resolve(output, executable.path);
     }
-    else if (os === 'macos') {
+    else if (platform === 'macos') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
-        const output = external_path_default().resolve("steamcmd");
+        const output = external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd');
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.sh");
         if (!executable) {
@@ -56695,9 +56699,9 @@ async function steam_download() {
  * @returns The absolute path to the Steam credentials file.
  */
 async function configLocation() {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        let filepath = external_path_default().resolve('steamcmd', 'config', 'config.vdf');
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        let filepath = external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd', 'config', 'config.vdf');
         if (await (0,promises_namespaceObject.access)(filepath).then(() => true, () => false)) {
             return filepath;
         }
@@ -56711,8 +56715,8 @@ async function configLocation() {
         }
         return filepath;
     }
-    else if (os === 'linux' || os === 'macos') {
-        let filepath = external_path_default().resolve('steamcmd', 'config', 'config.vdf');
+    else if (platform === 'linux' || platform === 'macos') {
+        let filepath = external_path_default().resolve(external_os_default().tmpdir(), 'steamcmd', 'config', 'config.vdf');
         if (await (0,promises_namespaceObject.access)(filepath).then(() => true, () => false)) {
             return filepath;
         }
@@ -56730,6 +56734,7 @@ async function configLocation() {
 }
 
 ;// CONCATENATED MODULE: ./src/gmad.ts
+
 
 
 
@@ -56760,9 +56765,9 @@ async function create(dir, out) {
  * @returns The absolute path to the gmad executable.
  */
 async function gmad_download() {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    const data = await download_default()(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${os}.zip`);
-    const output = external_path_default().resolve("gmad");
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    const data = await download_default()(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`);
+    const output = external_path_default().resolve(external_os_default().tmpdir(), "gmad");
     const files = await decompress_default()(data, output);
     const executable = files.find(f => f.path.startsWith("fastgmad") && !f.path.includes(".dll") && !f.path.includes(".so"));
     if (!executable) {
@@ -56771,17 +56776,18 @@ async function gmad_download() {
     return external_path_default().resolve(output, executable.path);
 }
 async function gmad_location() {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        return external_path_default().resolve('gmad', 'fastgmad.exe');
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        return external_path_default().resolve(external_os_default().tmpdir(), 'gmad', 'fastgmad.exe');
     }
-    else if (os === 'linux' || os === 'macos') {
-        return external_path_default().resolve('gmad', 'fastgmad');
+    else if (platform === 'linux' || platform === 'macos') {
+        return external_path_default().resolve(external_os_default().tmpdir(), 'gmad', 'fastgmad');
     }
     throw new Error("Unsupported platform");
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -56809,7 +56815,7 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad_download();
     console.log('Creating addon...');
-    const addon = await create(dir, external_path_default().resolve('output/addon.gma'));
+    const addon = await create(dir, external_path_default().resolve(external_os_default().tmpdir(), 'addon.gma'));
     const folder = external_path_default().dirname(addon);
     console.log('Publishing addon...');
     await publish(username, {

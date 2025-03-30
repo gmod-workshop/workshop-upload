@@ -1,6 +1,7 @@
 import { access, mkdir } from "fs/promises";
 import decompress from "decompress";
 import path from "path";
+import os from "os";
 import get from "download";
 import { command } from "./command.js";
 
@@ -34,11 +35,11 @@ export async function create(dir: string, out: string): Promise<string> {
  * @returns The absolute path to the gmad executable.
  */
 export async function download(): Promise<string> {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
 
-    const data = await get(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${os}.zip`);
+    const data = await get(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`);
 
-    const output = path.resolve("gmad");
+    const output = path.resolve(os.tmpdir(), "gmad");
 
     const files = await decompress(data, output);
 
@@ -52,11 +53,11 @@ export async function download(): Promise<string> {
 }
 
 export async function location(): Promise<string> {
-    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
-    if (os === 'windows') {
-        return path.resolve('gmad', 'fastgmad.exe')
-    } else if (os === 'linux' || os === 'macos') {
-        return path.resolve('gmad', 'fastgmad')
+    const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (platform === 'windows') {
+        return path.resolve(os.tmpdir(), 'gmad', 'fastgmad.exe')
+    } else if (platform === 'linux' || platform === 'macos') {
+        return path.resolve(os.tmpdir(), 'gmad', 'fastgmad')
     }
 
     throw new Error("Unsupported platform");

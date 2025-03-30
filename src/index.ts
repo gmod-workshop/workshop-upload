@@ -2,6 +2,7 @@ import { getInput } from "@actions/core";
 import * as steam from "./steam.js";
 import * as gmad from "./gmad.js";
 import path from "path";
+import os from "os";
 
 async function run() {
     const username = getInput('username', { required: true, trimWhitespace: true });
@@ -32,7 +33,7 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad.download();
     console.log('Creating addon...');
-    const addon = await gmad.create(dir, path.resolve('output/addon.gma'));
+    const addon = await gmad.create(dir, path.resolve(os.tmpdir(), 'addon.gma'));
     const folder = path.dirname(addon);
 
     console.log('Publishing addon...');
