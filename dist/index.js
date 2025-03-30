@@ -48592,6 +48592,8 @@ async function login(username, credentials = {}) {
         }
     }
     else if (vdf) {
+        await (0,promises_namespaceObject.mkdir)(external_path_default().resolve(process.cwd(), "steamcmd", "config"), { recursive: true });
+        await (0,promises_namespaceObject.writeFile)(external_path_default().resolve(process.cwd(), "steamcmd", "config", "config.vdf"), Buffer.from(vdf, "base64"));
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");

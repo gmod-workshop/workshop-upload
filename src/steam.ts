@@ -1,6 +1,6 @@
 import decompress from "decompress";
 import get from "download";
-import { access, readFile, writeFile } from "fs/promises";
+import { access, readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { command } from "./command.js";
 import { convert } from "./bbcode.js";
@@ -147,6 +147,9 @@ export async function login(username: string, credentials: { password?: string, 
             throw new Error("Failed to login to Steam");
         }
     } else if (vdf) {
+        await mkdir(path.resolve(process.cwd(), "steamcmd", "config"), { recursive: true });
+        await writeFile(path.resolve(process.cwd(), "steamcmd", "config", "config.vdf"), Buffer.from(vdf, "base64"));
+
         const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+quit");
         if (code !== 0 && code !== 7) {
             throw new Error("Failed to login to Steam");
