@@ -20,6 +20,7 @@ export interface PublishOptions {
      */
     folder: string;
 }
+export declare function location(): Promise<string>;
 export declare function publish(username: string, options: PublishOptions): Promise<void>;
 export declare function authenticated(username: string): Promise<boolean>;
 /**

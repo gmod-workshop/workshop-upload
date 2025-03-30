@@ -10,3 +10,4 @@ export declare function create(dir: string, out: string): Promise<string>;
  * @returns The absolute path to the gmad executable.
  */
 export declare function download(): Promise<string>;
+export declare function location(): Promise<string>;
