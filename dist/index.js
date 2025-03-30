@@ -48566,12 +48566,12 @@ const defaultPlatform = (typeof process === 'object' && process
         process.env.__MINIMATCH_TESTING_PLATFORM__) ||
         process.platform
     : 'posix');
-const path = {
+const esm_path = {
     win32: { sep: '\\' },
     posix: { sep: '/' },
 };
 /* c8 ignore stop */
-const sep = defaultPlatform === 'win32' ? path.win32.sep : path.posix.sep;
+const sep = defaultPlatform === 'win32' ? esm_path.win32.sep : esm_path.posix.sep;
 minimatch.sep = sep;
 const GLOBSTAR = Symbol('globstar **');
 minimatch.GLOBSTAR = GLOBSTAR;
@@ -55389,7 +55389,7 @@ const sync = Object.assign(globSync, {
     stream: globStreamSync,
     iterate: globIterateSync,
 });
-const glob = Object.assign(glob_, {
+const esm_glob = Object.assign(glob_, {
     glob: glob_,
     globSync,
     sync,
@@ -55406,7 +55406,7 @@ const glob = Object.assign(glob_, {
     escape: escape_escape,
     unescape: unescape_unescape,
 });
-glob.glob = glob;
+esm_glob.glob = esm_glob;
 //# sourceMappingURL=index.js.map
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
@@ -56518,18 +56518,10 @@ function convert(markdown) {
 async function steam_location() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        const [steamcmd] = await glob('**/steamcmd.exe', { nodir: true, absolute: true });
-        if (!steamcmd) {
-            throw new Error("Failed to find steamcmd executable");
-        }
-        return steamcmd;
+        return external_path_default().resolve('steamcmd', 'steamcmd.exe');
     }
     else if (os === 'linux' || os === 'macos') {
-        const [steamcmd] = await glob('**/steamcmd.sh', { nodir: true, absolute: true });
-        if (!steamcmd) {
-            throw new Error("Failed to find steamcmd executable");
-        }
-        return steamcmd;
+        return external_path_default().resolve('steamcmd', 'steamcmd.sh');
     }
     throw new Error("Unsupported platform");
 }
@@ -56574,8 +56566,8 @@ async function publish(username, options) {
         fields.set("visibility", options.visibility.toString());
     }
     const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
-    await (0,promises_namespaceObject.writeFile)(external_path_default().resolve('./addon.vdf'), vdf.trim());
-    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('./addon.vdf'), "+quit");
+    await (0,promises_namespaceObject.writeFile)(external_path_default().resolve('addon.vdf'), vdf.trim());
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
     }
@@ -56586,7 +56578,7 @@ async function authenticated(username) {
     if (!exists) {
         return false;
     }
-    const [filepath] = await glob('**/config/config.vdf', { absolute: true });
+    const [filepath] = await esm_glob('**/config/config.vdf', { absolute: true });
     if (!filepath) {
         return false;
     }
@@ -56608,7 +56600,7 @@ async function login(username, credentials = {}) {
     console.log("Attempting to login to Steam...");
     // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const [config] = await glob('**/config/config.vdf', { absolute: true });
+    const [config] = await esm_glob('**/config/config.vdf', { absolute: true, dot: true });
     if (!config) {
         console.log("\tNo cached credentials found");
     }
@@ -56672,7 +56664,7 @@ async function steam_download() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
-        const output = external_path_default().resolve(process.cwd(), "steamcmd");
+        const output = external_path_default().resolve("steamcmd");
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.exe");
         if (!executable) {
@@ -56682,7 +56674,7 @@ async function steam_download() {
     }
     else if (os === 'linux') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
-        const output = external_path_default().resolve(process.cwd(), "steamcmd");
+        const output = external_path_default().resolve("steamcmd");
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.sh");
         if (!executable) {
@@ -56692,7 +56684,7 @@ async function steam_download() {
     }
     else if (os === 'macos') {
         const data = await download_default()("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
-        const output = external_path_default().resolve(process.cwd(), "steamcmd");
+        const output = external_path_default().resolve("steamcmd");
         const files = await decompress_default()(data, output);
         const executable = files.find(f => f.path === "steamcmd.sh");
         if (!executable) {
@@ -56702,9 +56694,42 @@ async function steam_download() {
     }
     throw new Error("Unsupported platform");
 }
+async function config() {
+    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (os === 'windows') {
+        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+        if (await access(filepath).then(() => true, () => false)) {
+            return filepath;
+        }
+        const home = path.resolve(process.env['USERPROFILE']);
+        if (!await access(home).then(() => true, () => false)) {
+            throw new Error("Failed to find Steam config");
+        }
+        [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });
+        if (!filepath) {
+            throw new Error("Failed to find Steam config");
+        }
+        return filepath;
+    }
+    else if (os === 'linux' || os === 'macos') {
+        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+        if (await access(filepath).then(() => true, () => false)) {
+            return filepath;
+        }
+        const home = path.resolve(process.env['HOME']);
+        if (!await access(home).then(() => true, () => false)) {
+            throw new Error("Failed to find Steam config");
+        }
+        [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });
+        if (!filepath) {
+            throw new Error("Failed to find Steam config");
+        }
+        return filepath;
+    }
+    throw new Error("Unsupported platform");
+}
 
 ;// CONCATENATED MODULE: ./src/gmad.ts
-
 
 
 
@@ -56736,7 +56761,7 @@ async function create(dir, out) {
 async function gmad_download() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     const data = await download_default()(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${os}.zip`);
-    const output = external_path_default().resolve(process.cwd(), "gmad");
+    const output = external_path_default().resolve("gmad");
     const files = await decompress_default()(data, output);
     const executable = files.find(f => f.path.startsWith("fastgmad") && !f.path.includes(".dll") && !f.path.includes(".so"));
     if (!executable) {
@@ -56747,18 +56772,10 @@ async function gmad_download() {
 async function gmad_location() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        const [gmad] = await glob('**/fastgmad.exe', { nodir: true, absolute: true });
-        if (!gmad) {
-            throw new Error("Failed to find gmad executable");
-        }
-        return gmad;
+        return external_path_default().resolve('gmad', 'fastgmad.exe');
     }
     else if (os === 'linux' || os === 'macos') {
-        const [gmad] = await glob('**/fastgmad', { nodir: true, absolute: true });
-        if (!gmad) {
-            throw new Error("Failed to find gmad executable");
-        }
-        return gmad;
+        return external_path_default().resolve('gmad', 'fastgmad');
     }
     throw new Error("Unsupported platform");
 }

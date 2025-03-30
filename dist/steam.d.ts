@@ -39,3 +39,4 @@ export declare function login(username: string, credentials?: {
  */
 export declare function update(): Promise<void>;
 export declare function download(): Promise<string>;
+export declare function config(): Promise<string>;

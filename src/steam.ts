@@ -35,19 +35,9 @@ export interface PublishOptions {
 export async function location(): Promise<string> {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
-        const [steamcmd] = await glob('**/steamcmd.exe', { nodir: true, absolute: true });
-        if (!steamcmd) {
-            throw new Error("Failed to find steamcmd executable");
-        }
-
-        return steamcmd;
+        return path.resolve('steamcmd', 'steamcmd.exe')
     } else if (os === 'linux' || os === 'macos') {
-        const [steamcmd] = await glob('**/steamcmd.sh', { nodir: true, absolute: true });
-        if (!steamcmd) {
-            throw new Error("Failed to find steamcmd executable");
-        }
-
-        return steamcmd;
+        return path.resolve('steamcmd', 'steamcmd.sh')
     }
 
     throw new Error("Unsupported platform");
@@ -103,9 +93,9 @@ export async function publish(username: string, options: PublishOptions): Promis
 
     const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
 
-    await writeFile(path.resolve('./addon.vdf'), vdf.trim());
+    await writeFile(path.resolve('addon.vdf'), vdf.trim());
 
-    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('./addon.vdf'), "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
     }
@@ -142,7 +132,7 @@ export async function login(username: string, credentials: { password?: string, 
 
     // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const [config] = await glob('**/config/config.vdf', { absolute: true });
+    const [config] = await glob('**/config/config.vdf', { absolute: true, dot: true });
     if (!config) {
         console.log("\tNo cached credentials found");
     } else {
@@ -217,7 +207,7 @@ export async function download(): Promise<string> {
     if (os === 'windows') {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
 
-        const output = path.resolve(process.cwd(), "steamcmd");
+        const output = path.resolve("steamcmd");
     
         const files = await decompress(data, output);
     
@@ -231,7 +221,7 @@ export async function download(): Promise<string> {
     } else if (os === 'linux')  {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
 
-        const output = path.resolve(process.cwd(), "steamcmd");
+        const output = path.resolve("steamcmd");
     
         const files = await decompress(data, output);
     
@@ -245,7 +235,7 @@ export async function download(): Promise<string> {
     } else if (os === 'macos') {
         const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
         
-        const output = path.resolve(process.cwd(), "steamcmd");
+        const output = path.resolve("steamcmd");
     
         const files = await decompress(data, output);
     
@@ -256,6 +246,47 @@ export async function download(): Promise<string> {
         }
     
         return path.resolve(output, executable.path);
+    }
+
+    throw new Error("Unsupported platform");
+}
+
+export async function config(): Promise<string> {
+    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (os === 'windows') {
+        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+        if (await access(filepath).then(() => true, () => false)) {
+            return filepath;
+        }
+
+        const home = path.resolve(process.env['USERPROFILE']!!)
+        if (!await access(home).then(() => true, () => false)) {
+            throw new Error("Failed to find Steam config");
+        }
+
+        [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });
+        if (!filepath) {
+            throw new Error("Failed to find Steam config");
+        }
+
+        return filepath;
+    } else if (os === 'linux' || os === 'macos') {
+        let filepath = path.resolve('steamcmd', 'config', 'config.vdf');
+        if (await access(filepath).then(() => true, () => false)) {
+            return filepath;
+        }
+
+        const home = path.resolve(process.env['HOME']!!)
+        if (!await access(home).then(() => true, () => false)) {
+            throw new Error("Failed to find Steam config");
+        }
+
+        [filepath] = await glob(`${home}/+(Steam|steam|.steam)/config/config.vdf`, { absolute: true, dot: true });
+        if (!filepath) {
+            throw new Error("Failed to find Steam config");
+        }
+
+        return filepath;
     }
 
     throw new Error("Unsupported platform");
