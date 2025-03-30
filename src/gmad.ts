@@ -11,7 +11,7 @@ import { command } from "./command.js";
  * @returns The absolute path to the addon.
  */
 export async function create(dir: string, out: string): Promise<string> {
-    const gmad = path.resolve(process.cwd(), "gmad", "fastgmad.exe");
+    const gmad = await location();
     const exists = await access(gmad).then(() => true, () => false);
     if (!exists) {
         await download();
@@ -40,11 +40,24 @@ export async function download(): Promise<string> {
 
     const files = await decompress(data, output);
 
-    const executable = files.find(f => f.path === "fastgmad.exe");
+    const executable = files.find(f => f.path.startsWith("fastgmad") && !f.path.includes(".dll") && !f.path.includes(".so"));
 
     if (!executable) {
         throw new Error("Failed to find gmad executable");
     }
 
     return path.resolve(output, executable.path);
+}
+
+export async function location(): Promise<string> {
+    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (os === 'windows') {
+        return path.resolve(process.cwd(), "gmad", "fastgmad.exe");
+    } else if (os === 'linux') {
+        return path.resolve(process.cwd(), "gmad", "fastgmad");
+    } else if (os === 'macos') {
+        return path.resolve(process.cwd(), "gmad", "fastgmad");
+    }
+
+    throw new Error("Unsupported platform");
 }

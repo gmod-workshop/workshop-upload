@@ -31,8 +31,21 @@ export interface PublishOptions {
     folder: string;
 }
 
+export async function location(): Promise<string> {
+    const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
+    if (os === 'windows') {
+        return path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    } else if (os === 'linux') {
+        return path.resolve(process.cwd(), "steamcmd", "steamcmd.sh");
+    } else if (os === 'macos') {
+        return path.resolve(process.cwd(), "steamcmd", "steamcmd.sh");
+    }
+
+    throw new Error("Unsupported platform");
+}
+
 export async function publish(username: string, options: PublishOptions): Promise<void> {
-    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
         await download();
@@ -90,7 +103,7 @@ export async function publish(username: string, options: PublishOptions): Promis
 }
 
 export async function authenticated(username: string): Promise<boolean> {
-    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
         return false;
@@ -111,7 +124,7 @@ export async function authenticated(username: string): Promise<boolean> {
  * @param credentials Steam credentials. Optional if login credentials are already cached. 
  */
 export async function login(username: string, credentials: { password?: string, totp?: string, vdf?: string } = {}): Promise<void> {
-    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
         await download();
@@ -151,7 +164,7 @@ export async function login(username: string, credentials: { password?: string, 
  * Update SteamCMD. This does not require login.
  */
 export async function update(): Promise<void> {
-    const steamcmd = path.resolve(process.cwd(), "steamcmd", "steamcmd.exe");
+    const steamcmd = await location();
     const exits = await access(steamcmd).then(() => true, () => false);
     if (!exits) {
         await download();
