@@ -1,6 +1,6 @@
 import decompress from "decompress";
 import get from "download";
-import { access, readFile, writeFile, mkdir } from "fs/promises";
+import { access, readFile, writeFile, mkdir, readdir } from "fs/promises";
 import path from "path";
 import { command } from "./command.js";
 import { convert } from "./bbcode.js";
@@ -125,6 +125,13 @@ export async function authenticated(username: string): Promise<boolean> {
  */
 export async function login(username: string, credentials: { password?: string, totp?: string, vdf?: string } = {}): Promise<void> {
     console.log("Attempting to login to Steam...");
+
+    // Print all files in ~/.steam
+    console.log("\tChecking for cached credentials...");
+    const files = (await readdir(path.resolve("~/.steam"), { withFileTypes: true })).filter(f => f.isDirectory()).map(f => f.name);
+    for (const file of files) {
+        console.log(`\t\t${file}`);
+    }
 
     const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
