@@ -92,7 +92,9 @@ export async function publish(username: string, options: PublishOptions): Promis
         fields.set("visibility", options.visibility.toString());
     }
 
-    const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
+    const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}\n}`;
+
+    console.log(`Generating VDF:\n${vdf}`);
 
     await writeFile(path.resolve('addon.vdf'), vdf.trim());
 

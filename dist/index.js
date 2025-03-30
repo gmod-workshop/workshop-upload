@@ -56569,7 +56569,8 @@ async function publish(username, options) {
     if (options.visibility) {
         fields.set("visibility", options.visibility.toString());
     }
-    const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}}\n}`;
+    const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}\n}`;
+    console.log(`Generating VDF:\n${vdf}`);
     await (0,promises_namespaceObject.writeFile)(external_path_default().resolve('addon.vdf'), vdf.trim());
     const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", external_path_default().resolve('addon.vdf'), "+quit");
     if (code !== 0 && code !== 7) {
