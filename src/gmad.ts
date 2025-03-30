@@ -17,14 +17,16 @@ export async function create(dir: string, out: string): Promise<string> {
         await download();
     }
 
-    await mkdir(out, { recursive: true });
+    const absolute = path.resolve(out)
+
+    await mkdir(path.dirname(absolute), { recursive: true });
 
     const code = await command(gmad, "create", "-warninvalid", "-folder", dir, "-out", out);
     if (code !== 0) {
         throw new Error("Failed to create addon");
     }
 
-    return path.resolve(out);
+    return absolute;
 }
 
 /**

@@ -56578,7 +56578,7 @@ async function authenticated(username) {
     if (!exists) {
         return false;
     }
-    const filepath = await cache();
+    const filepath = await configLocation();
     try {
         const config = await (0,promises_namespaceObject.readFile)(filepath, "utf-8");
         return config.includes(`"${username}"`);
@@ -56596,7 +56596,7 @@ async function authenticated(username) {
 async function login(username, credentials = {}) {
     console.log("Attempting to login to Steam...");
     console.log("\tChecking for cached credentials...");
-    const config = await cache();
+    const config = await configLocation();
     if (!config) {
         console.log("\tNo cached credentials found");
     }
@@ -56690,7 +56690,11 @@ async function steam_download() {
     }
     throw new Error("Unsupported platform");
 }
-async function cache() {
+/**
+ *
+ * @returns The absolute path to the Steam credentials file.
+ */
+async function configLocation() {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
         let filepath = external_path_default().resolve('steamcmd', 'config', 'config.vdf');
@@ -56743,12 +56747,13 @@ async function create(dir, out) {
     if (!exists) {
         await gmad_download();
     }
-    await (0,promises_namespaceObject.mkdir)(out, { recursive: true });
+    const absolute = external_path_default().resolve(out);
+    await (0,promises_namespaceObject.mkdir)(external_path_default().dirname(absolute), { recursive: true });
     const code = await command(gmad, "create", "-warninvalid", "-folder", dir, "-out", out);
     if (code !== 0) {
         throw new Error("Failed to create addon");
     }
-    return external_path_default().resolve(out);
+    return absolute;
 }
 /**
  * Download gmad
@@ -56804,7 +56809,8 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad_download();
     console.log('Creating addon...');
-    const folder = await create(dir, external_path_default().resolve('./output/addon.gma'));
+    const addon = await create(dir, external_path_default().resolve('output/addon.gma'));
+    const folder = external_path_default().dirname(addon);
     console.log('Publishing addon...');
     await publish(username, {
         id,

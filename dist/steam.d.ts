@@ -39,4 +39,8 @@ export declare function login(username: string, credentials?: {
  */
 export declare function update(): Promise<void>;
 export declare function download(): Promise<string>;
-export declare function cache(): Promise<string>;
+/**
+ *
+ * @returns The absolute path to the Steam credentials file.
+ */
+export declare function configLocation(): Promise<string>;

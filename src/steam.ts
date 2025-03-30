@@ -108,7 +108,7 @@ export async function authenticated(username: string): Promise<boolean> {
         return false;
     }
 
-    const filepath = await cache();
+    const filepath = await configLocation();
 
     try {
         const config = await readFile(filepath, "utf-8");
@@ -128,7 +128,7 @@ export async function login(username: string, credentials: { password?: string, 
     console.log("Attempting to login to Steam...");
 
     console.log("\tChecking for cached credentials...");
-    const config = await cache();
+    const config = await configLocation();
     if (!config) {
         console.log("\tNo cached credentials found");
     } else {
@@ -247,7 +247,11 @@ export async function download(): Promise<string> {
     throw new Error("Unsupported platform");
 }
 
-export async function cache(): Promise<string> {
+/**
+ * 
+ * @returns The absolute path to the Steam credentials file.
+ */
+export async function configLocation(): Promise<string> {
     const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
     if (os === 'windows') {
         let filepath = path.resolve('steamcmd', 'config', 'config.vdf');

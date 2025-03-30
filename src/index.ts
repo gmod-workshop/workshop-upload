@@ -32,7 +32,8 @@ async function run() {
     console.log('Downloading gmad...');
     await gmad.download();
     console.log('Creating addon...');
-    const folder = await gmad.create(dir, path.resolve('./output/addon.gma'));
+    const addon = await gmad.create(dir, path.resolve('output/addon.gma'));
+    const folder = path.dirname(addon);
 
     console.log('Publishing addon...');
     await steam.publish(username, {
