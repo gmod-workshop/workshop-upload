@@ -48571,6 +48571,12 @@ async function authenticated(username) {
  */
 async function login(username, credentials = {}) {
     console.log("Attempting to login to Steam...");
+    // Print all files in ~/.steam
+    console.log("\tChecking for cached credentials...");
+    const files = (await (0,promises_namespaceObject.readdir)(external_path_default().resolve("~/.steam"), { withFileTypes: true })).filter(f => f.isDirectory()).map(f => f.name);
+    for (const file of files) {
+        console.log(`\t\t${file}`);
+    }
     const steamcmd = await steam_location();
     const exists = await (0,promises_namespaceObject.access)(steamcmd).then(() => true, () => false);
     if (!exists) {
