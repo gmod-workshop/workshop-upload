@@ -128,7 +128,7 @@ export async function login(username: string, credentials: { password?: string, 
 
     // Print all files in ~/.steam
     console.log("\tChecking for cached credentials...");
-    const files = (await readdir(path.resolve("~/.steam"), { withFileTypes: true })).filter(f => f.isDirectory()).map(f => f.name);
+    const files = (await readdir(path.resolve(process.env.HOME!!, ".steam"), { withFileTypes: true })).filter(f => f.isDirectory()).map(f => f.name);
     for (const file of files) {
         console.log(`\t\t${file}`);
     }
