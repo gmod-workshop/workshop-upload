@@ -29,6 +29,9 @@ inputs:
   changelog:
     description: 'Addon changelog'
     required: false
+  markdown-changelog:
+    description: 'Addon changelog (Markdown)'
+    required: false
 
   icon:
     description: 'Addon icon'
@@ -38,6 +41,12 @@ inputs:
     required: false
   description:
     description: 'Addon description'
+    required: false
+  markdown-description:
+    description: 'Addon description (Markdown)'
+    required: false
+  visibility:
+    description: 'Addon visibility'
     required: false
 
   folder:

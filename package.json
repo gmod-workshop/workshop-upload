@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "ncc build src/index.ts --license licenses.txt",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup src/index.ts src/cli.ts",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "keywords": [
     "gmod",
@@ -20,15 +21,27 @@
     "@types/download": "^8.0.5",
     "@types/node": "^22.13.13",
     "@vercel/ncc": "^0.38.3",
-    "typescript": "^5.8.2"
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
-    "@steamdown/core": "^1.0.0-beta.1",
-    "commander": "^13.1.0",
+    "@gmod-workshop/steamdown": "^1.0.0",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
     "glob": "^11.0.1"
+  },
+  "optionalDependencies": {
+    "commander": "^13.1.0"
+  },
+  "tsup": {
+    "format": [
+      "esm"
+    ],
+    "clean": true,
+    "sourcemap": true,
+    "dts": true
   }
 }

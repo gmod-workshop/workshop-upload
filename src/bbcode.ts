@@ -1,17 +1,16 @@
-import { parse, render } from "@steamdown/core";
+import { Converter } from "@gmod-workshop/steamdown";
 
 /**
  * Convert a markdown string to BBCode
  * @param markdown The markdown to convert
  * @returns The converted BBCode
  */
-export function convert(markdown: string): string {
-    const [tree, context] = parse(markdown);
+export async function convert(markdown: string): Promise<string> {
+    const converter = new Converter();
 
-    const bbcode = render(tree, context);
+    const bbcode = await converter.convert(markdown);
 
     return bbcode
-        .replace(/!\[url=(https:\/\/.*)\].*\[\/url\]/g, "[img]$1[/img]")
-        .replace(/\[url=(https:\/\/.*)\]!\[.*\[\/url\]\]\((https:\/\/.*)\)/g, "[url=$2][img]$1[/img][/url]")
-        .replace(/`(.*?)`/g, "[code]$1[/code]");
+        .replace(/https:\/\/github\.com\/([^\/]+\/[^\/]+)\/(issues|pull)\/(\d+)/g, '[url=https://github.com/$1/$2/$3]#$3[/url]')
+        .trim();
 }

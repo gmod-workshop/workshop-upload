@@ -1,8 +1,9 @@
 import { getInput } from "@actions/core";
-import * as steam from "./steam.js";
-import * as gmad from "./gmad.js";
 import path from "path";
 import os from "os";
+import * as steam from "./steam.js";
+import * as gmad from "./gmad.js";
+import * as bbcode from "./bbcode.js";
 
 async function run() {
     const username = getInput('username', { required: true, trimWhitespace: true });
@@ -17,10 +18,34 @@ async function run() {
     const id = getInput('id', { required: false, trimWhitespace: true });
 
     const title = getInput('title', { trimWhitespace: true });
-    const description = getInput('description', { trimWhitespace: false });
     const icon = getInput('icon', { trimWhitespace: true });
 
+    const description = getInput('description', { trimWhitespace: false });
+    const markdownDescription = getInput('markdown-description');
+
+    if (description && markdownDescription) {
+        throw new Error('Cannot provide both description and markdown-description');
+    }
+
+    let realDescription = description;
+    if (!description && markdownDescription) {
+        realDescription = await bbcode.convert(markdownDescription);
+    }
+
+    const visibility = getInput('visibility', { trimWhitespace: true });
+
     const changelog = getInput('changelog');
+    const markdownChangelog = getInput('markdown-changelog');
+
+    let realChangelog = changelog;
+    if (!changelog && markdownChangelog) {
+        realChangelog = await bbcode.convert(markdownChangelog);
+    }
+
+    if (changelog && markdownChangelog) {
+        throw new Error('Cannot provide both changelog and markdown-changelog');
+    }
+
     const dir = getInput('folder', { required: true });
 
     console.log('Downloading SteamCMD...');
@@ -40,11 +65,12 @@ async function run() {
     await steam.publish(username, {
         id,
         appid: "4000",
-        changelog,
+        changelog: realChangelog,
         icon,
         folder,
         title,
-        description,
+        description: realDescription,
+        visibility: parseInt(visibility),
     });
 
     console.log('Done!');

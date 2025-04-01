@@ -5,7 +5,6 @@ import { glob } from 'glob';
 import path from "path";
 import os from "os";
 import { command } from "./command.js";
-import { convert } from "./bbcode.js";
 
 export interface PublishOptions {
     id?: string;
@@ -69,7 +68,7 @@ export async function publish(username: string, options: PublishOptions): Promis
     fields.set("publishedfileid", options.id ?? "0");
 
     if (options.changelog) {
-        fields.set("changenote", convert(options.changelog).replace(/"/g, '\\"'));
+        fields.set("changenote", options.changelog.replace(/"/g, '\\"'));
     }
 
     if (options.icon) {
@@ -85,7 +84,7 @@ export async function publish(username: string, options: PublishOptions): Promis
     }
 
     if (options.description) {
-        fields.set("description", convert(options.description).replace(/"/g, '\\"'));
+        fields.set("description", options.description.replace(/"/g, '\\"'));
     }
 
     if (options.visibility) {

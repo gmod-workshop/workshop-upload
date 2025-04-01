@@ -1,3 +1,5 @@
+#!/bin/env node
+
 import { program } from "commander";
 import * as steam from "./steam.js";
 import * as gmad from "./gmad.js";
