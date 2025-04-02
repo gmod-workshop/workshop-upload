@@ -1,17 +1,12 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import * as steam from "../src/steam.js";
 import { command } from "../src/command.js";
-import get from "download";
-import decompress from "decompress";
-import { access, readFile, writeFile } from "fs/promises";
+import { access, readFile } from "fs/promises";
+import { unzip } from "../src/unzip.js";
 
 // Mock external dependencies
-vi.mock("download", () => ({
-    default: vi.fn()
-}));
-
-vi.mock("decompress", () => ({
-    default: vi.fn()
+vi.mock("../src/unzip.js", () => ({
+    unzip: vi.fn()
 }));
 
 vi.mock("../src/command.js", () => ({
@@ -31,19 +26,14 @@ describe("Steam", () => {
     });
 
     test("Downloads SteamCMD", async () => {
-        // Mock download response
-        const mockDownloadData = Buffer.from("fake-steamcmd-data");
-        (get as any).mockResolvedValue(mockDownloadData);
-
-        // Mock decompress response
-        (decompress as any).mockResolvedValue([
+        // Mock unzip response
+        (unzip as any).mockResolvedValue([
             { path: "steamcmd.exe" }
         ]);
 
         const result = await steam.download();
-        
-        expect(get).toHaveBeenCalledWith(expect.stringContaining("steamcmd"));
-        expect(decompress).toHaveBeenCalledWith(mockDownloadData, expect.any(String));
+
+        expect(unzip).toHaveBeenCalledWith(expect.stringContaining("steamcmd"), expect.any(String));
         expect(result).toContain("steamcmd");
     });
 
@@ -53,7 +43,7 @@ describe("Steam", () => {
         (readFile as any).mockResolvedValue('{"users": {"testuser": {}}}');
 
         const isAuthenticated = await steam.authenticated("testuser");
-        
+
         expect(isAuthenticated).toBe(true);
         expect(readFile).toHaveBeenCalled();
     });
@@ -61,10 +51,10 @@ describe("Steam", () => {
     test("Login with password succeeds", async () => {
         // Mock successful command execution
         (command as any).mockResolvedValue(0);
-        
+
         await expect(steam.login("testuser", { password: "testpass" }))
             .resolves.not.toThrow();
-        
+
         expect(command).toHaveBeenCalledWith(
             expect.any(String),
             "+@ShutdownOnFailedCommand",

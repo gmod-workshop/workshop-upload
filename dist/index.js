@@ -5,7 +5,7 @@ import {
   login,
   publish,
   update
-} from "./chunk-7UXSCAUR.js";
+} from "./chunk-SOAA5XN5.js";
 
 // src/index.ts
 import { getInput } from "@actions/core";

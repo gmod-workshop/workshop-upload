@@ -1,9 +1,8 @@
 import { access, mkdir } from "fs/promises";
-import decompress from "decompress";
 import path from "path";
 import os from "os";
-import get from "download";
 import { command } from "./command.js";
+import { unzip } from "./unzip.js";
 
 /**
  * Create a GMA file for an addon.
@@ -37,11 +36,9 @@ export async function create(dir: string, out: string): Promise<string> {
 export async function download(): Promise<string> {
     const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
 
-    const data = await get(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`);
-
     const output = path.resolve(os.tmpdir(), "gmad");
 
-    const files = await decompress(data, output);
+    const files = await unzip(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`, output);
 
     const executable = files.find(f => f.path.startsWith("fastgmad") && !f.path.includes(".dll") && !f.path.includes(".so"));
 

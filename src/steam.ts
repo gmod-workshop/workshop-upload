@@ -1,10 +1,10 @@
-import decompress from "decompress";
-import get from "download";
-import { access, readFile, writeFile, mkdir, readdir } from "fs/promises";
+import { access, readFile, writeFile } from "fs/promises";
 import { glob } from 'glob';
 import path from "path";
 import os from "os";
+
 import { command } from "./command.js";
+import { unzip } from "./unzip.js";
 
 export interface PublishOptions {
     id?: string;
@@ -203,11 +203,9 @@ export async function download(): Promise<string> {
     const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux';
 
     if (platform === 'windows') {
-        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
-
         const output = path.resolve(os.tmpdir(), 'steamcmd');
     
-        const files = await decompress(data, output);
+        const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip", output);
     
         const executable = files.find(f => f.path === "steamcmd.exe");
     
@@ -217,11 +215,9 @@ export async function download(): Promise<string> {
     
         return path.resolve(output, executable.path);
     } else if (platform === 'linux')  {
-        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
-
         const output = path.resolve(os.tmpdir(), 'steamcmd');
     
-        const files = await decompress(data, output);
+        const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz", output);
     
         const executable = files.find(f => f.path === "steamcmd.sh");
     
@@ -231,11 +227,9 @@ export async function download(): Promise<string> {
     
         return path.resolve(output, executable.path);
     } else if (platform === 'macos') {
-        const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
-        
         const output = path.resolve(os.tmpdir(), 'steamcmd');
     
-        const files = await decompress(data, output);
+        const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz", output);
     
         const executable = files.find(f => f.path === "steamcmd.sh");
     

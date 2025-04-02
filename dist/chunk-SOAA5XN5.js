@@ -1,6 +1,36 @@
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+var __commonJS = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+
 // src/steam.ts
-import decompress from "decompress";
-import get from "download";
 import { access, readFile, writeFile } from "fs/promises";
 import { glob } from "glob";
 import path from "path";
@@ -16,6 +46,18 @@ async function command(...args) {
     process2.on("error", reject);
     process2.on("exit", resolve);
   });
+}
+
+// src/unzip.ts
+import decompress from "decompress";
+import { buffer } from "stream/consumers";
+async function unzip(url, output) {
+  const { body } = await fetch(url);
+  if (!body) {
+    throw new Error("Failed to download file");
+  }
+  const buf = await buffer(body);
+  return await decompress(buf, output);
 }
 
 // src/steam.ts
@@ -152,27 +194,24 @@ async function update() {
 async function download() {
   const platform = process.platform === "win32" ? "windows" : process.platform === "darwin" ? "macos" : "linux";
   if (platform === "windows") {
-    const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
     const output = path.resolve(os.tmpdir(), "steamcmd");
-    const files = await decompress(data, output);
+    const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip", output);
     const executable = files.find((f) => f.path === "steamcmd.exe");
     if (!executable) {
       throw new Error("Failed to find steamcmd executable");
     }
     return path.resolve(output, executable.path);
   } else if (platform === "linux") {
-    const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz");
     const output = path.resolve(os.tmpdir(), "steamcmd");
-    const files = await decompress(data, output);
+    const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz", output);
     const executable = files.find((f) => f.path === "steamcmd.sh");
     if (!executable) {
       throw new Error("Failed to find steamcmd executable");
     }
     return path.resolve(output, executable.path);
   } else if (platform === "macos") {
-    const data = await get("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz");
     const output = path.resolve(os.tmpdir(), "steamcmd");
-    const files = await decompress(data, output);
+    const files = await unzip("https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz", output);
     const executable = files.find((f) => f.path === "steamcmd.sh");
     if (!executable) {
       throw new Error("Failed to find steamcmd executable");
@@ -216,11 +255,9 @@ async function configLocation() {
 }
 
 // src/gmad.ts
-import { access as access2, mkdir as mkdir2 } from "fs/promises";
-import decompress2 from "decompress";
+import { access as access2, mkdir } from "fs/promises";
 import path2 from "path";
 import os2 from "os";
-import get2 from "download";
 async function create(dir, out) {
   const gmad = await location2();
   const exists = await access2(gmad).then(() => true, () => false);
@@ -228,7 +265,7 @@ async function create(dir, out) {
     await download2();
   }
   const absolute = path2.resolve(out);
-  await mkdir2(path2.dirname(absolute), { recursive: true });
+  await mkdir(path2.dirname(absolute), { recursive: true });
   const code = await command(gmad, "create", "-warninvalid", "-folder", dir, "-out", out);
   if (code !== 0) {
     throw new Error("Failed to create addon");
@@ -237,9 +274,8 @@ async function create(dir, out) {
 }
 async function download2() {
   const platform = process.platform === "win32" ? "windows" : process.platform === "darwin" ? "macos" : "linux";
-  const data = await get2(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`);
   const output = path2.resolve(os2.tmpdir(), "gmad");
-  const files = await decompress2(data, output);
+  const files = await unzip(`https://github.com/WilliamVenner/fastgmad/releases/latest/download/fastgmad_${platform}.zip`, output);
   const executable = files.find((f) => f.path.startsWith("fastgmad") && !f.path.includes(".dll") && !f.path.includes(".so"));
   if (!executable) {
     throw new Error("Failed to find gmad executable");
@@ -257,6 +293,9 @@ async function location2() {
 }
 
 export {
+  __require,
+  __commonJS,
+  __toESM,
   publish,
   login,
   update,
@@ -264,4 +303,4 @@ export {
   create,
   download2
 };
-//# sourceMappingURL=chunk-7UXSCAUR.js.map
+//# sourceMappingURL=chunk-SOAA5XN5.js.map
