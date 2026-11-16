@@ -1,6 +1,6 @@
 name: "Garry's Mod Workshop Upload"
 author: 'dhkatz'
-description: "Upload an addon to the Garry's Mod Steam Workshop."
+description: "Upload to the Steam Workshop: Garry's Mod addons, Slay the Spire 2 mods, or any other game's items."
 
 branding:
   icon: 'arrow-up-circle'
@@ -21,6 +21,11 @@ inputs:
   vdf:
     description: 'Steam account VDF'
     required: false
+
+  appid:
+    description: 'Steam app ID of the game. Picks how the folder is prepared: 4000 (Garry''s Mod) packs it into a .gma, 2868840 (Slay the Spire 2) checks the mod manifests, any other game uploads it as is.'
+    required: false
+    default: '4000'
 
   id:
     description: 'Workshop item ID to update. Leave empty to create a new item (see the id output).'

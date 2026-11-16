@@ -1,9 +1,8 @@
 import { getInput, setFailed, setOutput } from "@actions/core";
 import path from "path";
-import os from "os";
 import * as steam from "./steam.js";
-import * as gmad from "./gmad.js";
 import * as bbcode from "./bbcode.js";
+import { gameFor } from "./games/index.js";
 
 async function run() {
     const username = getInput('username', { required: true, trimWhitespace: true });
@@ -15,12 +14,15 @@ async function run() {
         throw new Error('No login method provided');
     }
 
+    const game = gameFor(getInput('appid', { trimWhitespace: true }));
+    console.log(`Game: ${game.name} (app ${game.appid})`);
+
     const id = getInput('id', { trimWhitespace: true });
 
     const title = getInput('title', { trimWhitespace: true });
     const iconInput = getInput('icon', { trimWhitespace: true });
-    // New items need a preview image, so fall back to the bundled one.
-    const icon = iconInput ? path.resolve(iconInput) : (id ? undefined : steam.DEFAULT_ICON);
+    // New items get the game's default preview image, if it has one.
+    const icon = iconInput ? path.resolve(iconInput) : (id ? undefined : game.defaultIcon);
 
     const description = getInput('description', { trimWhitespace: false });
     const markdownDescription = getInput('markdown-description');
@@ -50,6 +52,9 @@ async function run() {
 
     const dir = path.resolve(getInput('folder', { required: true }));
 
+    // Check the folder before spending time on SteamCMD.
+    const folder = await game.prepare(dir);
+
     console.log('Downloading SteamCMD...');
     await steam.download();
     console.log('Updating SteamCMD...');
@@ -57,16 +62,10 @@ async function run() {
     console.log('Logging in to Steam...');
     await steam.login(username, { password, totp, vdf });
 
-    console.log('Downloading gmad...');
-    await gmad.download();
-    console.log('Creating addon...');
-    const addon = await gmad.create(dir, path.resolve(os.tmpdir(), 'addon', 'addon.gma'));
-    const folder = path.dirname(addon);
-
-    console.log('Publishing addon...');
+    console.log('Publishing...');
     const publishedId = await steam.publish(username, {
         id,
-        appid: "4000",
+        appid: game.appid,
         changelog: realChangelog,
         icon,
         folder,

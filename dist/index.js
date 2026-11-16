@@ -1,17 +1,15 @@
 import { createRequire as __createRequire } from "node:module"; const require = __createRequire(import.meta.url);
 import {
-  DEFAULT_ICON,
   __commonJS,
   __require,
   __toESM,
-  create,
   download,
-  download2,
+  gameFor,
   login,
   parseVisibility,
   publish,
   update
-} from "./chunk-QOBH64SZ.js";
+} from "./chunk-K43HL3P7.js";
 
 // node_modules/@actions/core/lib/utils.js
 var require_utils = __commonJS({
@@ -78,11 +76,11 @@ var require_command = __commonJS({
     };
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.issue = exports.issueCommand = void 0;
-    var os2 = __importStar(__require("os"));
+    var os = __importStar(__require("os"));
     var utils_1 = require_utils();
     function issueCommand(command, properties, message) {
       const cmd = new Command(command, properties, message);
-      process.stdout.write(cmd.toString() + os2.EOL);
+      process.stdout.write(cmd.toString() + os.EOL);
     }
     exports.issueCommand = issueCommand;
     function issue(name, message = "") {
@@ -166,7 +164,7 @@ var require_file_command = __commonJS({
     exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
     var crypto = __importStar(__require("crypto"));
     var fs = __importStar(__require("fs"));
-    var os2 = __importStar(__require("os"));
+    var os = __importStar(__require("os"));
     var utils_1 = require_utils();
     function issueFileCommand(command, message) {
       const filePath = process.env[`GITHUB_${command}`];
@@ -176,7 +174,7 @@ var require_file_command = __commonJS({
       if (!fs.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs.appendFileSync(filePath, `${(0, utils_1.toCommandValue)(message)}${os2.EOL}`, {
+      fs.appendFileSync(filePath, `${(0, utils_1.toCommandValue)(message)}${os.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -190,7 +188,7 @@ var require_file_command = __commonJS({
       if (convertedValue.includes(delimiter)) {
         throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
       }
-      return `${key}<<${delimiter}${os2.EOL}${convertedValue}${os2.EOL}${delimiter}`;
+      return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
     }
     exports.prepareKeyValueMessage = prepareKeyValueMessage;
   }
@@ -18922,7 +18920,7 @@ var require_toolrunner = __commonJS({
     };
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.argStringToArray = exports.ToolRunner = void 0;
-    var os2 = __importStar(__require("os"));
+    var os = __importStar(__require("os"));
     var events = __importStar(__require("events"));
     var child = __importStar(__require("child_process"));
     var path2 = __importStar(__require("path"));
@@ -18977,12 +18975,12 @@ var require_toolrunner = __commonJS({
       _processLineBuffer(data, strBuffer, onLine) {
         try {
           let s = strBuffer + data.toString();
-          let n = s.indexOf(os2.EOL);
+          let n = s.indexOf(os.EOL);
           while (n > -1) {
             const line = s.substring(0, n);
             onLine(line);
-            s = s.substring(n + os2.EOL.length);
-            n = s.indexOf(os2.EOL);
+            s = s.substring(n + os.EOL.length);
+            n = s.indexOf(os.EOL);
           }
           return s;
         } catch (err) {
@@ -19151,7 +19149,7 @@ var require_toolrunner = __commonJS({
             }
             const optionsNonNull = this._cloneExecOptions(this.options);
             if (!optionsNonNull.silent && optionsNonNull.outStream) {
-              optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os2.EOL);
+              optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os.EOL);
             }
             const state = new ExecState(optionsNonNull, this.toolPath);
             state.on("debug", (message) => {
@@ -19639,7 +19637,7 @@ var require_core = __commonJS({
     var command_1 = require_command();
     var file_command_1 = require_file_command();
     var utils_1 = require_utils();
-    var os2 = __importStar(__require("os"));
+    var os = __importStar(__require("os"));
     var path2 = __importStar(__require("path"));
     var oidc_utils_1 = require_oidc_utils();
     var ExitCode;
@@ -19707,7 +19705,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       if (filePath) {
         return (0, file_command_1.issueFileCommand)("OUTPUT", (0, file_command_1.prepareKeyValueMessage)(name, value));
       }
-      process.stdout.write(os2.EOL);
+      process.stdout.write(os.EOL);
       (0, command_1.issueCommand)("set-output", { name }, (0, utils_1.toCommandValue)(value));
     }
     exports.setOutput = setOutput2;
@@ -19741,7 +19739,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
     exports.notice = notice;
     function info(message) {
-      process.stdout.write(message + os2.EOL);
+      process.stdout.write(message + os.EOL);
     }
     exports.info = info;
     function startGroup(name) {
@@ -19808,7 +19806,6 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 // src/index.ts
 var import_core = __toESM(require_core(), 1);
 import path from "path";
-import os from "os";
 
 // node_modules/marked/lib/marked.esm.js
 function _getDefaults() {
@@ -22107,10 +22104,12 @@ async function run() {
   if (!password && !totp && !vdf) {
     throw new Error("No login method provided");
   }
+  const game = gameFor((0, import_core.getInput)("appid", { trimWhitespace: true }));
+  console.log(`Game: ${game.name} (app ${game.appid})`);
   const id = (0, import_core.getInput)("id", { trimWhitespace: true });
   const title = (0, import_core.getInput)("title", { trimWhitespace: true });
   const iconInput = (0, import_core.getInput)("icon", { trimWhitespace: true });
-  const icon = iconInput ? path.resolve(iconInput) : id ? void 0 : DEFAULT_ICON;
+  const icon = iconInput ? path.resolve(iconInput) : id ? void 0 : game.defaultIcon;
   const description = (0, import_core.getInput)("description", { trimWhitespace: false });
   const markdownDescription = (0, import_core.getInput)("markdown-description");
   if (description && markdownDescription) {
@@ -22131,21 +22130,17 @@ async function run() {
     realChangelog = await convert(markdownChangelog);
   }
   const dir = path.resolve((0, import_core.getInput)("folder", { required: true }));
+  const folder = await game.prepare(dir);
   console.log("Downloading SteamCMD...");
   await download();
   console.log("Updating SteamCMD...");
   await update();
   console.log("Logging in to Steam...");
   await login(username, { password, totp, vdf });
-  console.log("Downloading gmad...");
-  await download2();
-  console.log("Creating addon...");
-  const addon = await create(dir, path.resolve(os.tmpdir(), "addon", "addon.gma"));
-  const folder = path.dirname(addon);
-  console.log("Publishing addon...");
+  console.log("Publishing...");
   const publishedId = await publish(username, {
     id,
-    appid: "4000",
+    appid: game.appid,
     changelog: realChangelog,
     icon,
     folder,
