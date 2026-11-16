@@ -15878,8 +15878,8 @@ function parseVisibility(input) {
   }
   throw new Error(`Invalid visibility "${input}". Use one of: ${Object.keys(VISIBILITY).join(", ")} (or 0-3).`);
 }
-function escapeVdf(value) {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+function vdfString(value) {
+  return value.replace(/"([^"\n]*)"/g, "\u201C$1\u201D").replace(/"/g, "\u201D");
 }
 function workshopItemVdf(options) {
   const fields = /* @__PURE__ */ new Map();
@@ -15901,7 +15901,7 @@ function workshopItemVdf(options) {
   if (options.visibility !== void 0) {
     fields.set("visibility", options.visibility.toString());
   }
-  const lines = Array.from(fields.entries()).map(([key, value]) => `	"${key}" "${escapeVdf(value)}"`);
+  const lines = Array.from(fields.entries()).map(([key, value]) => `	"${key}" "${vdfString(value)}"`);
   return `"workshopitem"
 {
 ${lines.join("\n")}
@@ -16256,4 +16256,4 @@ strip-dirs/index.js:
    * https://github.com/shinnn/node-strip-dirs
   *)
 */
-//# sourceMappingURL=chunk-K43HL3P7.js.map
+//# sourceMappingURL=chunk-CXMRB4YN.js.map
