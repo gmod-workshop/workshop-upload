@@ -1,6 +1,7 @@
-#!/bin/env node
+#!/usr/bin/env node
 
 import { program } from "commander";
+import path from "path";
 import * as steam from "./steam.js";
 import * as gmad from "./gmad.js";
 
@@ -16,6 +17,7 @@ interface ProgramOptions {
     icon?: string;
     title?: string;
     description?: string;
+    visibility?: string;
 
     changelog?: string;
     folder: string;
@@ -33,27 +35,36 @@ async function run() {
         .option('--icon <icon>', 'Addon icon', process.env.ADDON_ICON)
         .option('--title <title>', 'Addon title', process.env.ADDON_TITLE)
         .option('--description <description>', 'Addon description', process.env.ADDON_DESCRIPTION)
+        .option('--visibility <visibility>', 'public, friends_only, private or unlisted', process.env.ADDON_VISIBILITY)
         .requiredOption('--folder <path>', 'Addon directory', process.env.ADDON_DIR)
         .parseAsync(process.argv);
 
-    const { username, password, totp, vdf, id, changelog, icon, folder: dir, title, description } = command.opts<ProgramOptions>();
+    const { username, password, totp, vdf, id, changelog, icon, folder: dir, title, description, visibility } = command.opts<ProgramOptions>();
 
     await steam.download();
     await steam.update();
     await steam.login(username, { password, totp, vdf });
 
     await gmad.download();
-    const folder = await gmad.create(dir, './output/addon.gma');
+    const addon = await gmad.create(path.resolve(dir), path.resolve('output', 'addon.gma'));
 
-    await steam.publish(username, {
+    const publishedId = await steam.publish(username, {
         id,
         appid: "4000",
         changelog,
-        icon,
-        folder,
+        icon: icon ? path.resolve(icon) : (id ? undefined : steam.DEFAULT_ICON),
+        folder: path.dirname(addon),
         title,
         description,
+        visibility: steam.parseVisibility(visibility),
     });
+
+    if (publishedId) {
+        console.log(`Published https://steamcommunity.com/sharedfiles/filedetails/?id=${publishedId}`);
+    }
 }
 
-run();
+run().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+});

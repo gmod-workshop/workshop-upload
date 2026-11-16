@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts src/cli.ts",
+    "build": "tsup",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
@@ -33,12 +33,7 @@
   "optionalDependencies": {
     "commander": "^13.1.0"
   },
-  "tsup": {
-    "format": [
-      "esm"
-    ],
-    "clean": true,
-    "sourcemap": true,
-    "dts": true
+  "engines": {
+    "node": ">=24"
   }
 }

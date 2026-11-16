@@ -34,14 +34,14 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: gmod-workshop/workshop-upload@v1
         with:
           username: ${{ secrets.STEAM_USERNAME }}
           vdf: ${{ secrets.STEAM_VDF }}
           id: ${{ secrets.ADDON_ID }}
-          changelog: ${{ github.event.release.body }}
-          dir: ./
+          markdown-changelog: ${{ github.event.release.body }}
+          folder: ./
 ```
 
 **Inputs**
@@ -51,13 +51,24 @@ jobs:
 | `username` | Steam username | Yes |
 | `password` | Steam password | No |
 | `totp` | Steam TOTP code | No |
-| `vdf` | Steam account VDF | No |
-| `id` | Addon ID | No |
-| `changelog` | Addon changelog | No |
-| `icon` | Addon icon | No |
-| `dir` | Addon directory | Yes |
+| `vdf` | Steam account VDF (base64) | No |
+| `folder` | Addon directory | Yes |
+| `id` | Workshop item ID to update. Leave empty to create a new item. | No |
 | `title` | Addon title | No |
-| `description` | Addon description | No |
+| `description` | Addon description (Steam BBCode) | No |
+| `markdown-description` | Addon description (Markdown, converted to BBCode) | No |
+| `changelog` | Change note (Steam BBCode) | No |
+| `markdown-changelog` | Change note (Markdown, converted to BBCode) | No |
+| `icon` | Path to the preview image (under 1 MB). New items get a default icon if empty. | No |
+| `visibility` | `public`, `friends_only`, `private` or `unlisted` (or `0`-`3`). Empty keeps the current visibility. | No |
+
+One login method (`password`, `totp` or `vdf`) is required. Fields left empty are left unchanged on the Workshop.
+
+**Outputs**
+
+| Name | Description |
+| ---- | ----------- |
+| `id` | The published Workshop item ID. Save it after creating a new item, and pass it as `id` from then on. |
 
 Authentication
 --------------

@@ -1,5 +1,7 @@
-#!/bin/env node
+#!/usr/bin/env node
+import { createRequire as __createRequire } from "node:module"; const require = __createRequire(import.meta.url);
 import {
+  DEFAULT_ICON,
   __commonJS,
   __require,
   __toESM,
@@ -7,9 +9,10 @@ import {
   download,
   download2,
   login,
+  parseVisibility,
   publish,
   update
-} from "./chunk-SOAA5XN5.js";
+} from "./chunk-5XCBNK2A.js";
 
 // node_modules/commander/lib/error.js
 var require_error = __commonJS({
@@ -197,8 +200,7 @@ var require_help = __commonJS({
        * @param {{ error?: boolean, helpWidth?: number, outputHasColors?: boolean }} contextOptions
        */
       prepareContext(contextOptions) {
-        var _a, _b;
-        this.helpWidth = (_b = (_a = this.helpWidth) != null ? _a : contextOptions.helpWidth) != null ? _b : 80;
+        this.helpWidth = this.helpWidth ?? contextOptions.helpWidth ?? 80;
       }
       /**
        * Get an array of the visible subcommands. Includes a placeholder for the implicit help command, if there is one.
@@ -496,9 +498,8 @@ var require_help = __commonJS({
        * @returns {string}
        */
       formatHelp(cmd, helper) {
-        var _a;
         const termWidth = helper.padWidth(cmd, helper);
-        const helpWidth = (_a = helper.helpWidth) != null ? _a : 80;
+        const helpWidth = helper.helpWidth ?? 80;
         function callFormatItem(term, description) {
           return helper.formatItem(term, termWidth, description, helper);
         }
@@ -678,7 +679,6 @@ var require_help = __commonJS({
        * @returns {string}
        */
       formatItem(term, termWidth, description, helper) {
-        var _a;
         const itemIndent = 2;
         const itemIndentStr = " ".repeat(itemIndent);
         if (!description) return itemIndentStr + term;
@@ -686,7 +686,7 @@ var require_help = __commonJS({
           termWidth + term.length - helper.displayWidth(term)
         );
         const spacerWidth = 2;
-        const helpWidth = (_a = this.helpWidth) != null ? _a : 80;
+        const helpWidth = this.helpWidth ?? 80;
         const remainingWidth = helpWidth - termWidth - spacerWidth - itemIndent;
         let formattedDescription;
         if (remainingWidth < this.minWidthToWrap || helper.preformatted(description)) {
@@ -1137,7 +1137,7 @@ var require_command = __commonJS({
     "use strict";
     var EventEmitter = __require("node:events").EventEmitter;
     var childProcess = __require("node:child_process");
-    var path = __require("node:path");
+    var path2 = __require("node:path");
     var fs = __require("node:fs");
     var process2 = __require("node:process");
     var { Argument: Argument2, humanReadableArgName } = require_argument();
@@ -1191,14 +1191,8 @@ var require_command = __commonJS({
           outputError: (str, write) => write(str),
           getOutHelpWidth: () => process2.stdout.isTTY ? process2.stdout.columns : void 0,
           getErrHelpWidth: () => process2.stderr.isTTY ? process2.stderr.columns : void 0,
-          getOutHasColors: () => {
-            var _a, _b, _c;
-            return (_c = useColor()) != null ? _c : process2.stdout.isTTY && ((_b = (_a = process2.stdout).hasColors) == null ? void 0 : _b.call(_a));
-          },
-          getErrHasColors: () => {
-            var _a, _b, _c;
-            return (_c = useColor()) != null ? _c : process2.stderr.isTTY && ((_b = (_a = process2.stderr).hasColors) == null ? void 0 : _b.call(_a));
-          },
+          getOutHasColors: () => useColor() ?? (process2.stdout.isTTY && process2.stdout.hasColors?.()),
+          getErrHasColors: () => useColor() ?? (process2.stderr.isTTY && process2.stderr.hasColors?.()),
           stripColor: (str) => stripColor(str)
         };
         this._hidden = false;
@@ -1486,9 +1480,9 @@ var require_command = __commonJS({
           this._addImplicitHelpCommand = enableOrNameAndArgs;
           return this;
         }
-        enableOrNameAndArgs = enableOrNameAndArgs != null ? enableOrNameAndArgs : "help [command]";
+        enableOrNameAndArgs = enableOrNameAndArgs ?? "help [command]";
         const [, helpName, helpArgs] = enableOrNameAndArgs.match(/([^ ]+) *(.*)/);
-        const helpDescription = description != null ? description : "display help for command";
+        const helpDescription = description ?? "display help for command";
         const helpCommand = this.createCommand(helpName);
         helpCommand.helpOption(false);
         if (helpArgs) helpCommand.arguments(helpArgs);
@@ -1520,8 +1514,7 @@ var require_command = __commonJS({
        * @package
        */
       _getHelpCommand() {
-        var _a;
-        const hasImplicitHelpCommand = (_a = this._addImplicitHelpCommand) != null ? _a : this.commands.length && !this._actionHandler && !this._findCommand("help");
+        const hasImplicitHelpCommand = this._addImplicitHelpCommand ?? (this.commands.length && !this._actionHandler && !this._findCommand("help"));
         if (hasImplicitHelpCommand) {
           if (this._helpCommand === void 0) {
             this.helpCommand(void 0, void 0);
@@ -1975,16 +1968,15 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @private
        */
       _prepareUserArgs(argv, parseOptions) {
-        var _a, _b;
         if (argv !== void 0 && !Array.isArray(argv)) {
           throw new Error("first parameter to parse must be array or undefined");
         }
         parseOptions = parseOptions || {};
         if (argv === void 0 && parseOptions.from === void 0) {
-          if ((_a = process2.versions) == null ? void 0 : _a.electron) {
+          if (process2.versions?.electron) {
             parseOptions.from = "electron";
           }
-          const execArgv = (_b = process2.execArgv) != null ? _b : [];
+          const execArgv = process2.execArgv ?? [];
           if (execArgv.includes("-e") || execArgv.includes("--eval") || execArgv.includes("-p") || execArgv.includes("--print")) {
             parseOptions.from = "eval";
           }
@@ -2145,9 +2137,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
         let launchWithNode = false;
         const sourceExt = [".js", ".ts", ".tsx", ".mjs", ".cjs"];
         function findFile(baseDir, baseName) {
-          const localBin = path.resolve(baseDir, baseName);
+          const localBin = path2.resolve(baseDir, baseName);
           if (fs.existsSync(localBin)) return localBin;
-          if (sourceExt.includes(path.extname(baseName))) return void 0;
+          if (sourceExt.includes(path2.extname(baseName))) return void 0;
           const foundExt = sourceExt.find(
             (ext) => fs.existsSync(`${localBin}${ext}`)
           );
@@ -2162,20 +2154,20 @@ Expecting one of '${allowedValues.join("', '")}'`);
           let resolvedScriptPath;
           try {
             resolvedScriptPath = fs.realpathSync(this._scriptPath);
-          } catch (e) {
+          } catch {
             resolvedScriptPath = this._scriptPath;
           }
-          executableDir = path.resolve(
-            path.dirname(resolvedScriptPath),
+          executableDir = path2.resolve(
+            path2.dirname(resolvedScriptPath),
             executableDir
           );
         }
         if (executableDir) {
           let localFile = findFile(executableDir, executableFile);
           if (!localFile && !subcommand._executableFile && this._scriptPath) {
-            const legacyName = path.basename(
+            const legacyName = path2.basename(
               this._scriptPath,
-              path.extname(this._scriptPath)
+              path2.extname(this._scriptPath)
             );
             if (legacyName !== this._name) {
               localFile = findFile(
@@ -2186,7 +2178,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
           executableFile = localFile || executableFile;
         }
-        launchWithNode = sourceExt.includes(path.extname(executableFile));
+        launchWithNode = sourceExt.includes(path2.extname(executableFile));
         let proc;
         if (process2.platform !== "win32") {
           if (launchWithNode) {
@@ -2218,7 +2210,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
         }
         const exitCallback = this._exitCallback;
         proc.on("close", (code) => {
-          code = code != null ? code : 1;
+          code = code ?? 1;
           if (!exitCallback) {
             process2.exit(code);
           } else {
@@ -2284,7 +2276,6 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @private
        */
       _dispatchHelpCommand(subcommandName) {
-        var _a, _b, _c, _d;
         if (!subcommandName) {
           this.help();
         }
@@ -2295,7 +2286,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
         return this._dispatchSubcommand(
           subcommandName,
           [],
-          [(_d = (_c = (_a = this._getHelpOption()) == null ? void 0 : _a.long) != null ? _c : (_b = this._getHelpOption()) == null ? void 0 : _b.short) != null ? _d : "--help"]
+          [this._getHelpOption()?.long ?? this._getHelpOption()?.short ?? "--help"]
         );
       }
       /**
@@ -2959,7 +2950,6 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return {(string|Command)}
        */
       alias(alias) {
-        var _a;
         if (alias === void 0) return this._aliases[0];
         let command = this;
         if (this.commands.length !== 0 && this.commands[this.commands.length - 1]._executableHandler) {
@@ -2967,7 +2957,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
         }
         if (alias === command._name)
           throw new Error("Command alias can't be the same as its name");
-        const matchingCommand = (_a = this.parent) == null ? void 0 : _a._findCommand(alias);
+        const matchingCommand = this.parent?._findCommand(alias);
         if (matchingCommand) {
           const existingCmd = [matchingCommand.name()].concat(matchingCommand.aliases()).join("|");
           throw new Error(
@@ -3035,7 +3025,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return {Command}
        */
       nameFromFilename(filename) {
-        this._name = path.basename(filename, path.extname(filename));
+        this._name = path2.basename(filename, path2.extname(filename));
         return this;
       }
       /**
@@ -3049,9 +3039,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {string} [path]
        * @return {(string|null|Command)}
        */
-      executableDir(path2) {
-        if (path2 === void 0) return this._executableDir;
-        this._executableDir = path2;
+      executableDir(path3) {
+        if (path3 === void 0) return this._executableDir;
+        this._executableDir = path3;
         return this;
       }
       /**
@@ -3112,7 +3102,6 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {{ error: boolean } | Function} [contextOptions] - pass {error:true} to write to stderr instead of stdout
        */
       outputHelp(contextOptions) {
-        var _a;
         let deprecatedCallback;
         if (typeof contextOptions === "function") {
           deprecatedCallback = contextOptions;
@@ -3134,7 +3123,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
         }
         outputContext.write(helpInformation);
-        if ((_a = this._getHelpOption()) == null ? void 0 : _a.long) {
+        if (this._getHelpOption()?.long) {
           this.emit(this._getHelpOption().long);
         }
         this.emit("afterHelp", eventContext);
@@ -3155,17 +3144,16 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return {Command} `this` command for chaining
        */
       helpOption(flags, description) {
-        var _a;
         if (typeof flags === "boolean") {
           if (flags) {
-            this._helpOption = (_a = this._helpOption) != null ? _a : void 0;
+            this._helpOption = this._helpOption ?? void 0;
           } else {
             this._helpOption = null;
           }
           return this;
         }
-        flags = flags != null ? flags : "-h, --help";
-        description = description != null ? description : "display help for command";
+        flags = flags ?? "-h, --help";
+        description = description ?? "display help for command";
         this._helpOption = this.createOption(flags, description);
         return this;
       }
@@ -3201,9 +3189,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {{ error: boolean }} [contextOptions] - pass {error:true} to write to stderr instead of stdout
        */
       help(contextOptions) {
-        var _a;
         this.outputHelp(contextOptions);
-        let exitCode = Number((_a = process2.exitCode) != null ? _a : 0);
+        let exitCode = Number(process2.exitCode ?? 0);
         if (exitCode === 0 && contextOptions && typeof contextOptions !== "function" && contextOptions.error) {
           exitCode = 1;
         }
@@ -3345,23 +3332,31 @@ var {
 } = import_index.default;
 
 // src/cli.ts
+import path from "path";
 async function run() {
-  const command = await program.name("workshop-upload").requiredOption("-u, --username <username>", "Steam username", process.env.STEAM_USERNAME).option("-p, --password <password>", "Steam password", process.env.STEAM_PASSWORD).option("--totp <totp>", "Steam TOTP code", process.env.STEAM_TOTP).option("--vdf <vdf>", "Steam account VDF", process.env.STEAM_VDF).option("-i, --id <id>", "Addon ID", process.env.ADDON_ID).option("--changelog <changelog>", "Addon changelog", process.env.ADDON_CHANGELOG).option("--icon <icon>", "Addon icon", process.env.ADDON_ICON).option("--title <title>", "Addon title", process.env.ADDON_TITLE).option("--description <description>", "Addon description", process.env.ADDON_DESCRIPTION).requiredOption("--folder <path>", "Addon directory", process.env.ADDON_DIR).parseAsync(process.argv);
-  const { username, password, totp, vdf, id, changelog, icon, folder: dir, title, description } = command.opts();
+  const command = await program.name("workshop-upload").requiredOption("-u, --username <username>", "Steam username", process.env.STEAM_USERNAME).option("-p, --password <password>", "Steam password", process.env.STEAM_PASSWORD).option("--totp <totp>", "Steam TOTP code", process.env.STEAM_TOTP).option("--vdf <vdf>", "Steam account VDF", process.env.STEAM_VDF).option("-i, --id <id>", "Addon ID", process.env.ADDON_ID).option("--changelog <changelog>", "Addon changelog", process.env.ADDON_CHANGELOG).option("--icon <icon>", "Addon icon", process.env.ADDON_ICON).option("--title <title>", "Addon title", process.env.ADDON_TITLE).option("--description <description>", "Addon description", process.env.ADDON_DESCRIPTION).option("--visibility <visibility>", "public, friends_only, private or unlisted", process.env.ADDON_VISIBILITY).requiredOption("--folder <path>", "Addon directory", process.env.ADDON_DIR).parseAsync(process.argv);
+  const { username, password, totp, vdf, id, changelog, icon, folder: dir, title, description, visibility } = command.opts();
   await download();
   await update();
   await login(username, { password, totp, vdf });
   await download2();
-  const folder = await create(dir, "./output/addon.gma");
-  await publish(username, {
+  const addon = await create(path.resolve(dir), path.resolve("output", "addon.gma"));
+  const publishedId = await publish(username, {
     id,
     appid: "4000",
     changelog,
-    icon,
-    folder,
+    icon: icon ? path.resolve(icon) : id ? void 0 : DEFAULT_ICON,
+    folder: path.dirname(addon),
     title,
-    description
+    description,
+    visibility: parseVisibility(visibility)
   });
+  if (publishedId) {
+    console.log(`Published https://steamcommunity.com/sharedfiles/filedetails/?id=${publishedId}`);
+  }
 }
-run();
+run().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exitCode = 1;
+});
 //# sourceMappingURL=cli.js.map

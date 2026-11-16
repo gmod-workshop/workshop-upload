@@ -23,8 +23,8 @@ inputs:
     required: false
 
   id:
-    description: 'Addon ID'
-    required: true
+    description: 'Workshop item ID to update. Leave empty to create a new item (see the id output).'
+    required: false
 
   changelog:
     description: 'Addon changelog'
@@ -34,7 +34,7 @@ inputs:
     required: false
 
   icon:
-    description: 'Addon icon'
+    description: 'Addon icon (path to an image under 1 MB). New items use a default icon if this is empty.'
     required: false
   title:
     description: 'Addon title'
@@ -46,13 +46,17 @@ inputs:
     description: 'Addon description (Markdown)'
     required: false
   visibility:
-    description: 'Addon visibility'
+    description: 'public, friends_only, private or unlisted (or 0-3). Leave empty to keep the current visibility.'
     required: false
 
   folder:
     description: 'Addon directory'
     required: true
 
+outputs:
+  id:
+    description: 'The Workshop item ID that was published (useful after creating a new item)'
+
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

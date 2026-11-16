@@ -1,4 +1,4 @@
-import { getInput } from "@actions/core";
+import { getInput, setFailed, setOutput } from "@actions/core";
 import path from "path";
 import os from "os";
 import * as steam from "./steam.js";
@@ -15,10 +15,12 @@ async function run() {
         throw new Error('No login method provided');
     }
 
-    const id = getInput('id', { required: false, trimWhitespace: true });
+    const id = getInput('id', { trimWhitespace: true });
 
     const title = getInput('title', { trimWhitespace: true });
-    const icon = getInput('icon', { trimWhitespace: true });
+    const iconInput = getInput('icon', { trimWhitespace: true });
+    // New items need a preview image, so fall back to the bundled one.
+    const icon = iconInput ? path.resolve(iconInput) : (id ? undefined : steam.DEFAULT_ICON);
 
     const description = getInput('description', { trimWhitespace: false });
     const markdownDescription = getInput('markdown-description');
@@ -32,21 +34,21 @@ async function run() {
         realDescription = await bbcode.convert(markdownDescription);
     }
 
-    const visibility = getInput('visibility', { trimWhitespace: true });
+    const visibility = steam.parseVisibility(getInput('visibility'));
 
     const changelog = getInput('changelog');
     const markdownChangelog = getInput('markdown-changelog');
+
+    if (changelog && markdownChangelog) {
+        throw new Error('Cannot provide both changelog and markdown-changelog');
+    }
 
     let realChangelog = changelog;
     if (!changelog && markdownChangelog) {
         realChangelog = await bbcode.convert(markdownChangelog);
     }
 
-    if (changelog && markdownChangelog) {
-        throw new Error('Cannot provide both changelog and markdown-changelog');
-    }
-
-    const dir = getInput('folder', { required: true });
+    const dir = path.resolve(getInput('folder', { required: true }));
 
     console.log('Downloading SteamCMD...');
     await steam.download();
@@ -62,7 +64,7 @@ async function run() {
     const folder = path.dirname(addon);
 
     console.log('Publishing addon...');
-    await steam.publish(username, {
+    const publishedId = await steam.publish(username, {
         id,
         appid: "4000",
         changelog: realChangelog,
@@ -70,10 +72,17 @@ async function run() {
         folder,
         title,
         description: realDescription,
-        visibility: parseInt(visibility),
+        visibility,
     });
+
+    if (publishedId) {
+        setOutput('id', publishedId);
+        console.log(`Published https://steamcommunity.com/sharedfiles/filedetails/?id=${publishedId}`);
+    }
 
     console.log('Done!');
 }
 
-run();
+run().catch((error) => {
+    setFailed(error instanceof Error ? error.message : String(error));
+});
