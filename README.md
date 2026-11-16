@@ -1,12 +1,13 @@
 workshop-upload
 ===============
 
-Upload an addon to the Garry's Mod Steam Workshop.
+Upload an addon to the Garry's Mod Steam Workshop, or a mod for another game such as Slay the Spire 2.
 
 **Features**
 
 * Upload an addon to the Garry's Mod Steam Workshop.
     * Includes changelog and icon.
+* Other games through [game profiles](#games), picked by `appid`.
 * Login using password, TOTP, or VDF (recommended).
 * Uses completely open source tools (SteamCMD, fastgmad)
     * Other actions use closed source binaries which might steal your credentials.
@@ -44,6 +45,20 @@ jobs:
           folder: ./
 ```
 
+**Slay the Spire 2**
+
+```yaml
+      - uses: gmod-workshop/workshop-upload@v1
+        with:
+          appid: 2868840
+          username: ${{ secrets.STEAM_USERNAME }}
+          vdf: ${{ secrets.STEAM_VDF }}
+          id: ${{ vars.WORKSHOP_ID }}
+          folder: ./artifacts/mods/MyMod   # MyMod.json, MyMod.dll, MyMod.pck
+          icon: ./workshop/image.png
+          markdown-changelog: ${{ github.event.release.body }}
+```
+
 **Inputs**
 
 | Name | Description | Required |
@@ -53,6 +68,7 @@ jobs:
 | `totp` | Steam TOTP code | No |
 | `vdf` | Steam account VDF (base64) | No |
 | `folder` | Addon directory | Yes |
+| `appid` | Steam app ID of the game. Picks the [game profile](#games). Default `4000` (Garry's Mod). | No |
 | `id` | Workshop item ID to update. Leave empty to create a new item. | No |
 | `title` | Addon title | No |
 | `description` | Addon description (Steam BBCode) | No |
@@ -69,6 +85,19 @@ One login method (`password`, `totp` or `vdf`) is required. Fields left empty ar
 | Name | Description |
 | ---- | ----------- |
 | `id` | The published Workshop item ID. Save it after creating a new item, and pass it as `id` from then on. |
+
+Games
+-----
+
+`appid` picks how `folder` is prepared before upload:
+
+| Game | `appid` | What happens |
+| ---- | ------- | ------------ |
+| Garry's Mod | `4000` (default) | The folder is packed into a `.gma` with [fastgmad](https://github.com/WilliamVenner/fastgmad). New items get a default icon. |
+| Slay the Spire 2 | `2868840` | The folder is uploaded as is, after checking each mod manifest (`<id>.json`, at the top level or one folder down) is named after its `id` and that the `.dll` and `.pck` its `has_dll` and `has_pck` promise are there. |
+| Any other game | its app ID | The folder is uploaded as is. |
+
+To add a game, write a profile in [`src/games/`](src/games/) and list it in [`src/games/index.ts`](src/games/index.ts).
 
 Authentication
 --------------

@@ -293,14 +293,14 @@ var require_polyfills = __commonJS({
       fs.fstatSync = statFixSync(fs.fstatSync);
       fs.lstatSync = statFixSync(fs.lstatSync);
       if (fs.chmod && !fs.lchmod) {
-        fs.lchmod = function(path4, mode, cb) {
+        fs.lchmod = function(path6, mode, cb) {
           if (cb) process.nextTick(cb);
         };
         fs.lchmodSync = function() {
         };
       }
       if (fs.chown && !fs.lchown) {
-        fs.lchown = function(path4, uid, gid, cb) {
+        fs.lchown = function(path6, uid, gid, cb) {
           if (cb) process.nextTick(cb);
         };
         fs.lchownSync = function() {
@@ -367,9 +367,9 @@ var require_polyfills = __commonJS({
         };
       }(fs.readSync);
       function patchLchmod(fs2) {
-        fs2.lchmod = function(path4, mode, callback) {
+        fs2.lchmod = function(path6, mode, callback) {
           fs2.open(
-            path4,
+            path6,
             constants.O_WRONLY | constants.O_SYMLINK,
             mode,
             function(err, fd) {
@@ -385,8 +385,8 @@ var require_polyfills = __commonJS({
             }
           );
         };
-        fs2.lchmodSync = function(path4, mode) {
-          var fd = fs2.openSync(path4, constants.O_WRONLY | constants.O_SYMLINK, mode);
+        fs2.lchmodSync = function(path6, mode) {
+          var fd = fs2.openSync(path6, constants.O_WRONLY | constants.O_SYMLINK, mode);
           var threw = true;
           var ret;
           try {
@@ -407,8 +407,8 @@ var require_polyfills = __commonJS({
       }
       function patchLutimes(fs2) {
         if (constants.hasOwnProperty("O_SYMLINK") && fs2.futimes) {
-          fs2.lutimes = function(path4, at, mt, cb) {
-            fs2.open(path4, constants.O_SYMLINK, function(er, fd) {
+          fs2.lutimes = function(path6, at, mt, cb) {
+            fs2.open(path6, constants.O_SYMLINK, function(er, fd) {
               if (er) {
                 if (cb) cb(er);
                 return;
@@ -420,8 +420,8 @@ var require_polyfills = __commonJS({
               });
             });
           };
-          fs2.lutimesSync = function(path4, at, mt) {
-            var fd = fs2.openSync(path4, constants.O_SYMLINK);
+          fs2.lutimesSync = function(path6, at, mt) {
+            var fd = fs2.openSync(path6, constants.O_SYMLINK);
             var ret;
             var threw = true;
             try {
@@ -540,11 +540,11 @@ var require_legacy_streams = __commonJS({
         ReadStream,
         WriteStream
       };
-      function ReadStream(path4, options) {
-        if (!(this instanceof ReadStream)) return new ReadStream(path4, options);
+      function ReadStream(path6, options) {
+        if (!(this instanceof ReadStream)) return new ReadStream(path6, options);
         Stream2.call(this);
         var self2 = this;
-        this.path = path4;
+        this.path = path6;
         this.fd = null;
         this.readable = true;
         this.paused = false;
@@ -589,10 +589,10 @@ var require_legacy_streams = __commonJS({
           self2._read();
         });
       }
-      function WriteStream(path4, options) {
-        if (!(this instanceof WriteStream)) return new WriteStream(path4, options);
+      function WriteStream(path6, options) {
+        if (!(this instanceof WriteStream)) return new WriteStream(path6, options);
         Stream2.call(this);
-        this.path = path4;
+        this.path = path6;
         this.fd = null;
         this.writable = true;
         this.flags = "w";
@@ -735,15 +735,15 @@ var require_graceful_fs = __commonJS({
       fs2.createReadStream = createReadStream;
       fs2.createWriteStream = createWriteStream;
       var fs$readFile = fs2.readFile;
-      fs2.readFile = readFile2;
-      function readFile2(path4, options, cb) {
+      fs2.readFile = readFile3;
+      function readFile3(path6, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$readFile(path4, options, cb);
-        function go$readFile(path5, options2, cb2, startTime) {
-          return fs$readFile(path5, options2, function(err) {
+        return go$readFile(path6, options, cb);
+        function go$readFile(path7, options2, cb2, startTime) {
+          return fs$readFile(path7, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$readFile, [path5, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$readFile, [path7, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -753,14 +753,14 @@ var require_graceful_fs = __commonJS({
       }
       var fs$writeFile = fs2.writeFile;
       fs2.writeFile = writeFile2;
-      function writeFile2(path4, data, options, cb) {
+      function writeFile2(path6, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$writeFile(path4, data, options, cb);
-        function go$writeFile(path5, data2, options2, cb2, startTime) {
-          return fs$writeFile(path5, data2, options2, function(err) {
+        return go$writeFile(path6, data, options, cb);
+        function go$writeFile(path7, data2, options2, cb2, startTime) {
+          return fs$writeFile(path7, data2, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$writeFile, [path5, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$writeFile, [path7, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -771,14 +771,14 @@ var require_graceful_fs = __commonJS({
       var fs$appendFile = fs2.appendFile;
       if (fs$appendFile)
         fs2.appendFile = appendFile;
-      function appendFile(path4, data, options, cb) {
+      function appendFile(path6, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$appendFile(path4, data, options, cb);
-        function go$appendFile(path5, data2, options2, cb2, startTime) {
-          return fs$appendFile(path5, data2, options2, function(err) {
+        return go$appendFile(path6, data, options, cb);
+        function go$appendFile(path7, data2, options2, cb2, startTime) {
+          return fs$appendFile(path7, data2, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$appendFile, [path5, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$appendFile, [path7, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -807,33 +807,33 @@ var require_graceful_fs = __commonJS({
         }
       }
       var fs$readdir = fs2.readdir;
-      fs2.readdir = readdir2;
+      fs2.readdir = readdir3;
       var noReaddirOptionVersions = /^v[0-5]\./;
-      function readdir2(path4, options, cb) {
+      function readdir3(path6, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path5, options2, cb2, startTime) {
-          return fs$readdir(path5, fs$readdirCallback(
-            path5,
+        var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path7, options2, cb2, startTime) {
+          return fs$readdir(path7, fs$readdirCallback(
+            path7,
             options2,
             cb2,
             startTime
           ));
-        } : function go$readdir2(path5, options2, cb2, startTime) {
-          return fs$readdir(path5, options2, fs$readdirCallback(
-            path5,
+        } : function go$readdir2(path7, options2, cb2, startTime) {
+          return fs$readdir(path7, options2, fs$readdirCallback(
+            path7,
             options2,
             cb2,
             startTime
           ));
         };
-        return go$readdir(path4, options, cb);
-        function fs$readdirCallback(path5, options2, cb2, startTime) {
+        return go$readdir(path6, options, cb);
+        function fs$readdirCallback(path7, options2, cb2, startTime) {
           return function(err, files) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
               enqueue([
                 go$readdir,
-                [path5, options2, cb2],
+                [path7, options2, cb2],
                 err,
                 startTime || Date.now(),
                 Date.now()
@@ -904,7 +904,7 @@ var require_graceful_fs = __commonJS({
         enumerable: true,
         configurable: true
       });
-      function ReadStream(path4, options) {
+      function ReadStream(path6, options) {
         if (this instanceof ReadStream)
           return fs$ReadStream.apply(this, arguments), this;
         else
@@ -924,7 +924,7 @@ var require_graceful_fs = __commonJS({
           }
         });
       }
-      function WriteStream(path4, options) {
+      function WriteStream(path6, options) {
         if (this instanceof WriteStream)
           return fs$WriteStream.apply(this, arguments), this;
         else
@@ -942,22 +942,22 @@ var require_graceful_fs = __commonJS({
           }
         });
       }
-      function createReadStream(path4, options) {
-        return new fs2.ReadStream(path4, options);
+      function createReadStream(path6, options) {
+        return new fs2.ReadStream(path6, options);
       }
-      function createWriteStream(path4, options) {
-        return new fs2.WriteStream(path4, options);
+      function createWriteStream(path6, options) {
+        return new fs2.WriteStream(path6, options);
       }
       var fs$open = fs2.open;
       fs2.open = open;
-      function open(path4, flags, mode, cb) {
+      function open(path6, flags, mode, cb) {
         if (typeof mode === "function")
           cb = mode, mode = null;
-        return go$open(path4, flags, mode, cb);
-        function go$open(path5, flags2, mode2, cb2, startTime) {
-          return fs$open(path5, flags2, mode2, function(err, fd) {
+        return go$open(path6, flags, mode, cb);
+        function go$open(path7, flags2, mode2, cb2, startTime) {
+          return fs$open(path7, flags2, mode2, function(err, fd) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$open, [path5, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$open, [path7, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -8417,7 +8417,7 @@ var require_yauzl = __commonJS({
     exports.ZipFile = ZipFile;
     exports.Entry = Entry;
     exports.RandomAccessReader = RandomAccessReader;
-    function open(path4, options, callback) {
+    function open(path6, options, callback) {
       if (typeof options === "function") {
         callback = options;
         options = null;
@@ -8429,7 +8429,7 @@ var require_yauzl = __commonJS({
       if (options.validateEntrySizes == null) options.validateEntrySizes = true;
       if (options.strictFileNames == null) options.strictFileNames = false;
       if (callback == null) callback = defaultCallback;
-      fs.open(path4, "r", function(err, fd) {
+      fs.open(path6, "r", function(err, fd) {
         if (err) return callback(err);
         fromFd(fd, options, function(err2, zipfile) {
           if (err2) fs.close(fd, defaultCallback);
@@ -9175,7 +9175,7 @@ var require_make_dir = __commonJS({
   "node_modules/make-dir/index.js"(exports, module) {
     "use strict";
     var fs = __require("fs");
-    var path4 = __require("path");
+    var path6 = __require("path");
     var pify = require_pify2();
     var defaults2 = {
       mode: 511 & ~process.umask(),
@@ -9183,7 +9183,7 @@ var require_make_dir = __commonJS({
     };
     var checkPath = (pth) => {
       if (process.platform === "win32") {
-        const pathHasInvalidWinCharacters = /[<>:"|?*]/.test(pth.replace(path4.parse(pth).root, ""));
+        const pathHasInvalidWinCharacters = /[<>:"|?*]/.test(pth.replace(path6.parse(pth).root, ""));
         if (pathHasInvalidWinCharacters) {
           const err = new Error(`Path contains invalid characters: ${pth}`);
           err.code = "EINVAL";
@@ -9199,17 +9199,17 @@ var require_make_dir = __commonJS({
       const make = (pth) => {
         return mkdir2(pth, opts.mode).then(() => pth).catch((err) => {
           if (err.code === "ENOENT") {
-            if (err.message.includes("null bytes") || path4.dirname(pth) === pth) {
+            if (err.message.includes("null bytes") || path6.dirname(pth) === pth) {
               throw err;
             }
-            return make(path4.dirname(pth)).then(() => make(pth));
+            return make(path6.dirname(pth)).then(() => make(pth));
           }
           return stat(pth).then((stats) => stats.isDirectory() ? pth : Promise.reject()).catch(() => {
             throw err;
           });
         });
       };
-      return make(path4.resolve(input));
+      return make(path6.resolve(input));
     });
     module.exports.sync = (input, opts) => {
       checkPath(input);
@@ -9219,10 +9219,10 @@ var require_make_dir = __commonJS({
           opts.fs.mkdirSync(pth, opts.mode);
         } catch (err) {
           if (err.code === "ENOENT") {
-            if (err.message.includes("null bytes") || path4.dirname(pth) === pth) {
+            if (err.message.includes("null bytes") || path6.dirname(pth) === pth) {
               throw err;
             }
-            make(path4.dirname(pth));
+            make(path6.dirname(pth));
             return make(pth);
           }
           try {
@@ -9235,7 +9235,7 @@ var require_make_dir = __commonJS({
         }
         return pth;
       };
-      return make(path4.resolve(input));
+      return make(path6.resolve(input));
     };
   }
 });
@@ -9271,7 +9271,7 @@ var require_is_natural_number = __commonJS({
 var require_strip_dirs = __commonJS({
   "node_modules/strip-dirs/index.js"(exports, module) {
     "use strict";
-    var path4 = __require("path");
+    var path6 = __require("path");
     var util = __require("util");
     var isNaturalNumber = require_is_natural_number();
     module.exports = function stripDirs(pathStr, count, option) {
@@ -9280,7 +9280,7 @@ var require_strip_dirs = __commonJS({
           util.inspect(pathStr) + " is not a string. First argument to strip-dirs must be a path string."
         );
       }
-      if (path4.posix.isAbsolute(pathStr) || path4.win32.isAbsolute(pathStr)) {
+      if (path6.posix.isAbsolute(pathStr) || path6.win32.isAbsolute(pathStr)) {
         throw new Error(`${pathStr} is an absolute path. strip-dirs requires a relative path.`);
       }
       if (!isNaturalNumber(count, { includeZero: true })) {
@@ -9307,7 +9307,7 @@ var require_strip_dirs = __commonJS({
       } else {
         option = { disallowOverflow: false };
       }
-      const pathComponents = path4.normalize(pathStr).split(path4.sep);
+      const pathComponents = path6.normalize(pathStr).split(path6.sep);
       if (pathComponents.length > 1 && pathComponents[0] === ".") {
         pathComponents.shift();
       }
@@ -9317,7 +9317,7 @@ var require_strip_dirs = __commonJS({
         }
         count = pathComponents.length - 1;
       }
-      return path4.join.apply(null, pathComponents.slice(count));
+      return path6.join.apply(null, pathComponents.slice(count));
     };
   }
 });
@@ -9326,7 +9326,7 @@ var require_strip_dirs = __commonJS({
 var require_decompress = __commonJS({
   "node_modules/decompress/index.js"(exports, module) {
     "use strict";
-    var path4 = __require("path");
+    var path6 = __require("path");
     var fs = require_graceful_fs();
     var decompressTar = require_decompress_tar();
     var decompressTarbz2 = require_decompress_tarbz2();
@@ -9344,7 +9344,7 @@ var require_decompress = __commonJS({
     };
     var safeMakeDir = (dir, realOutputPath) => {
       return fsP.realpath(dir).catch((_) => {
-        const parent = path4.dirname(dir);
+        const parent = path6.dirname(dir);
         return safeMakeDir(parent, realOutputPath);
       }).then((realParentPath) => {
         if (realParentPath.indexOf(realOutputPath) !== 0) {
@@ -9380,21 +9380,21 @@ var require_decompress = __commonJS({
         return files;
       }
       return Promise.all(files.map((x) => {
-        const dest = path4.join(output, x.path);
+        const dest = path6.join(output, x.path);
         const mode = x.mode & ~process.umask();
         const now = /* @__PURE__ */ new Date();
         if (x.type === "directory") {
           return makeDir(output).then((outputPath) => fsP.realpath(outputPath)).then((realOutputPath) => safeMakeDir(dest, realOutputPath)).then(() => fsP.utimes(dest, now, x.mtime)).then(() => x);
         }
         return makeDir(output).then((outputPath) => fsP.realpath(outputPath)).then((realOutputPath) => {
-          return safeMakeDir(path4.dirname(dest), realOutputPath).then(() => realOutputPath);
+          return safeMakeDir(path6.dirname(dest), realOutputPath).then(() => realOutputPath);
         }).then((realOutputPath) => {
           if (x.type === "file") {
             return preventWritingThroughSymlink(dest, realOutputPath);
           }
           return realOutputPath;
         }).then((realOutputPath) => {
-          return fsP.realpath(path4.dirname(dest)).then((realDestinationDir) => {
+          return fsP.realpath(path6.dirname(dest)).then((realDestinationDir) => {
             if (realDestinationDir.indexOf(realOutputPath) !== 0) {
               throw new Error("Refusing to write outside output directory: " + realDestinationDir);
             }
@@ -13306,12 +13306,12 @@ var PathBase = class {
   /**
    * Get the Path object referenced by the string path, resolved from this Path
    */
-  resolve(path4) {
-    if (!path4) {
+  resolve(path6) {
+    if (!path6) {
       return this;
     }
-    const rootPath = this.getRootString(path4);
-    const dir = path4.substring(rootPath.length);
+    const rootPath = this.getRootString(path6);
+    const dir = path6.substring(rootPath.length);
     const dirParts = dir.split(this.splitSep);
     const result = rootPath ? this.getRoot(rootPath).#resolveParts(dirParts) : this.#resolveParts(dirParts);
     return result;
@@ -14063,8 +14063,8 @@ var PathWin32 = class _PathWin32 extends PathBase {
   /**
    * @internal
    */
-  getRootString(path4) {
-    return win32.parse(path4).root;
+  getRootString(path6) {
+    return win32.parse(path6).root;
   }
   /**
    * @internal
@@ -14110,8 +14110,8 @@ var PathPosix = class _PathPosix extends PathBase {
   /**
    * @internal
    */
-  getRootString(path4) {
-    return path4.startsWith("/") ? "/" : "";
+  getRootString(path6) {
+    return path6.startsWith("/") ? "/" : "";
   }
   /**
    * @internal
@@ -14200,11 +14200,11 @@ var PathScurryBase = class {
   /**
    * Get the depth of a provided path, string, or the cwd
    */
-  depth(path4 = this.cwd) {
-    if (typeof path4 === "string") {
-      path4 = this.cwd.resolve(path4);
+  depth(path6 = this.cwd) {
+    if (typeof path6 === "string") {
+      path6 = this.cwd.resolve(path6);
     }
-    return path4.depth();
+    return path6.depth();
   }
   /**
    * Return the cache of child entries.  Exposed so subclasses can create
@@ -14691,9 +14691,9 @@ var PathScurryBase = class {
     process2();
     return results;
   }
-  chdir(path4 = this.cwd) {
+  chdir(path6 = this.cwd) {
     const oldCwd = this.cwd;
-    this.cwd = typeof path4 === "string" ? this.cwd.resolve(path4) : path4;
+    this.cwd = typeof path6 === "string" ? this.cwd.resolve(path6) : path6;
     this.cwd[setAsCwd](oldCwd);
   }
 };
@@ -15049,8 +15049,8 @@ var MatchRecord = class {
   }
   // match, absolute, ifdir
   entries() {
-    return [...this.store.entries()].map(([path4, n]) => [
-      path4,
+    return [...this.store.entries()].map(([path6, n]) => [
+      path6,
       !!(n & 2),
       !!(n & 1)
     ]);
@@ -15255,9 +15255,9 @@ var GlobUtil = class {
   signal;
   maxDepth;
   includeChildMatches;
-  constructor(patterns, path4, opts) {
+  constructor(patterns, path6, opts) {
     this.patterns = patterns;
-    this.path = path4;
+    this.path = path6;
     this.opts = opts;
     this.#sep = !opts.posix && opts.platform === "win32" ? "\\" : "/";
     this.includeChildMatches = opts.includeChildMatches !== false;
@@ -15276,11 +15276,11 @@ var GlobUtil = class {
       });
     }
   }
-  #ignored(path4) {
-    return this.seen.has(path4) || !!this.#ignore?.ignored?.(path4);
+  #ignored(path6) {
+    return this.seen.has(path6) || !!this.#ignore?.ignored?.(path6);
   }
-  #childrenIgnored(path4) {
-    return !!this.#ignore?.childrenIgnored?.(path4);
+  #childrenIgnored(path6) {
+    return !!this.#ignore?.childrenIgnored?.(path6);
   }
   // backpressure mechanism
   pause() {
@@ -15495,8 +15495,8 @@ var GlobUtil = class {
 };
 var GlobWalker = class extends GlobUtil {
   matches = /* @__PURE__ */ new Set();
-  constructor(patterns, path4, opts) {
-    super(patterns, path4, opts);
+  constructor(patterns, path6, opts) {
+    super(patterns, path6, opts);
   }
   matchEmit(e) {
     this.matches.add(e);
@@ -15533,8 +15533,8 @@ var GlobWalker = class extends GlobUtil {
 };
 var GlobStream = class extends GlobUtil {
   results;
-  constructor(patterns, path4, opts) {
-    super(patterns, path4, opts);
+  constructor(patterns, path6, opts) {
+    super(patterns, path6, opts);
     this.results = new Minipass({
       signal: this.signal,
       objectMode: true
@@ -16077,6 +16077,10 @@ async function configLocation() {
   throw new Error("Unsupported platform");
 }
 
+// src/games/gmod.ts
+import path4 from "path";
+import os3 from "os";
+
 // src/gmad.ts
 import { access as access2, mkdir } from "fs/promises";
 import path3 from "path";
@@ -16115,18 +16119,118 @@ async function location2() {
   throw new Error("Unsupported platform");
 }
 
+// src/games/gmod.ts
+var gmod = {
+  name: "Garry's Mod",
+  appid: "4000",
+  defaultIcon: DEFAULT_ICON,
+  async prepare(folder) {
+    console.log("Downloading gmad...");
+    await download2();
+    console.log("Creating addon...");
+    const addon = await create(folder, path4.resolve(os3.tmpdir(), "addon", "addon.gma"));
+    return path4.dirname(addon);
+  }
+};
+
+// src/games/sts2.ts
+import { readdir as readdir2, readFile as readFile2 } from "fs/promises";
+import path5 from "path";
+function isManifest(value) {
+  return typeof value === "object" && value !== null && typeof value.id === "string" && ("has_dll" in value || "has_pck" in value);
+}
+async function findSts2Manifests(folder) {
+  const found = [];
+  const dirs = [folder];
+  for (const entry of await readdir2(folder, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      dirs.push(path5.join(folder, entry.name));
+    }
+  }
+  for (const dir of dirs) {
+    for (const entry of await readdir2(dir, { withFileTypes: true })) {
+      if (!entry.isFile() || path5.extname(entry.name).toLowerCase() !== ".json") {
+        continue;
+      }
+      const file = path5.join(dir, entry.name);
+      let json;
+      try {
+        json = JSON.parse((await readFile2(file, "utf-8")).replace(/^﻿/, ""));
+      } catch {
+        continue;
+      }
+      if (isManifest(json)) {
+        found.push({ file, manifest: json });
+      }
+    }
+  }
+  return found;
+}
+async function checkSts2Mod(folder) {
+  const errors = [];
+  const warnings = [];
+  const manifests = await findSts2Manifests(folder);
+  if (manifests.length === 0) {
+    warnings.push(`No mod manifest found in ${folder}. A Slay the Spire 2 mod needs <id>.json (with id, has_dll and has_pck) next to its .dll and .pck.`);
+  }
+  for (const { file, manifest } of manifests) {
+    const dir = path5.dirname(file);
+    const name = path5.relative(folder, file);
+    const files = new Set(await readdir2(dir));
+    if (path5.basename(file, ".json") !== manifest.id) {
+      errors.push(`${name}: the file must be named after the mod's id ("${manifest.id}.json").`);
+    }
+    if (manifest.has_dll && !files.has(`${manifest.id}.dll`)) {
+      errors.push(`${name}: has_dll is true, but ${manifest.id}.dll is missing.`);
+    }
+    if (manifest.has_pck && !files.has(`${manifest.id}.pck`)) {
+      errors.push(`${name}: has_pck is true, but ${manifest.id}.pck is missing.`);
+    }
+  }
+  return { errors, warnings };
+}
+var sts2 = {
+  name: "Slay the Spire 2",
+  appid: "2868840",
+  async prepare(folder) {
+    const { errors, warnings } = await checkSts2Mod(folder);
+    warnings.forEach((warning) => console.warn(`Warning: ${warning}`));
+    if (errors.length > 0) {
+      throw new Error(`The mod folder isn't valid:
+${errors.map((error) => `  - ${error}`).join("\n")}`);
+    }
+    return folder;
+  }
+};
+
+// src/games/index.ts
+var GAMES = [gmod, sts2];
+var DEFAULT_APPID = gmod.appid;
+function gameFor(appid) {
+  const id = appid.trim() || DEFAULT_APPID;
+  if (!/^\d+$/.test(id)) {
+    throw new Error(`Invalid appid "${appid}": expected a Steam app ID such as ${DEFAULT_APPID}.`);
+  }
+  return GAMES.find((game) => game.appid === id) ?? {
+    name: `Steam app ${id}`,
+    appid: id,
+    async prepare(folder) {
+      return folder;
+    }
+  };
+}
+
 export {
   __require,
   __commonJS,
   __toESM,
-  DEFAULT_ICON,
   parseVisibility,
   publish,
   login,
   update,
   download,
-  create,
-  download2
+  DEFAULT_APPID,
+  gameFor
 };
 /*! Bundled license information:
 
@@ -16152,4 +16256,4 @@ strip-dirs/index.js:
    * https://github.com/shinnn/node-strip-dirs
   *)
 */
-//# sourceMappingURL=chunk-QOBH64SZ.js.map
+//# sourceMappingURL=chunk-K43HL3P7.js.map

@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 import { createRequire as __createRequire } from "node:module"; const require = __createRequire(import.meta.url);
 import {
-  DEFAULT_ICON,
+  DEFAULT_APPID,
   __commonJS,
   __require,
   __toESM,
-  create,
   download,
-  download2,
+  gameFor,
   login,
   parseVisibility,
   publish,
   update
-} from "./chunk-QOBH64SZ.js";
+} from "./chunk-K43HL3P7.js";
 
 // node_modules/commander/lib/error.js
 var require_error = __commonJS({
@@ -3334,19 +3333,20 @@ var {
 // src/cli.ts
 import path from "path";
 async function run() {
-  const command = await program.name("workshop-upload").requiredOption("-u, --username <username>", "Steam username", process.env.STEAM_USERNAME).option("-p, --password <password>", "Steam password", process.env.STEAM_PASSWORD).option("--totp <totp>", "Steam TOTP code", process.env.STEAM_TOTP).option("--vdf <vdf>", "Steam account VDF", process.env.STEAM_VDF).option("-i, --id <id>", "Addon ID", process.env.ADDON_ID).option("--changelog <changelog>", "Addon changelog", process.env.ADDON_CHANGELOG).option("--icon <icon>", "Addon icon", process.env.ADDON_ICON).option("--title <title>", "Addon title", process.env.ADDON_TITLE).option("--description <description>", "Addon description", process.env.ADDON_DESCRIPTION).option("--visibility <visibility>", "public, friends_only, private or unlisted", process.env.ADDON_VISIBILITY).requiredOption("--folder <path>", "Addon directory", process.env.ADDON_DIR).parseAsync(process.argv);
-  const { username, password, totp, vdf, id, changelog, icon, folder: dir, title, description, visibility } = command.opts();
+  const command = await program.name("workshop-upload").requiredOption("-u, --username <username>", "Steam username", process.env.STEAM_USERNAME).option("-p, --password <password>", "Steam password", process.env.STEAM_PASSWORD).option("--totp <totp>", "Steam TOTP code", process.env.STEAM_TOTP).option("--vdf <vdf>", "Steam account VDF", process.env.STEAM_VDF).option("-a, --appid <appid>", "Steam app ID of the game (picks the game profile)", process.env.STEAM_APPID ?? DEFAULT_APPID).option("-i, --id <id>", "Addon ID", process.env.ADDON_ID).option("--changelog <changelog>", "Addon changelog", process.env.ADDON_CHANGELOG).option("--icon <icon>", "Addon icon", process.env.ADDON_ICON).option("--title <title>", "Addon title", process.env.ADDON_TITLE).option("--description <description>", "Addon description", process.env.ADDON_DESCRIPTION).option("--visibility <visibility>", "public, friends_only, private or unlisted", process.env.ADDON_VISIBILITY).requiredOption("--folder <path>", "Addon directory", process.env.ADDON_DIR).parseAsync(process.argv);
+  const { username, password, totp, vdf, appid, id, changelog, icon, folder: dir, title, description, visibility } = command.opts();
+  const game = gameFor(appid);
+  console.log(`Game: ${game.name} (app ${game.appid})`);
+  const folder = await game.prepare(path.resolve(dir));
   await download();
   await update();
   await login(username, { password, totp, vdf });
-  await download2();
-  const addon = await create(path.resolve(dir), path.resolve("output", "addon.gma"));
   const publishedId = await publish(username, {
     id,
-    appid: "4000",
+    appid: game.appid,
     changelog,
-    icon: icon ? path.resolve(icon) : id ? void 0 : DEFAULT_ICON,
-    folder: path.dirname(addon),
+    icon: icon ? path.resolve(icon) : id ? void 0 : game.defaultIcon,
+    folder,
     title,
     description,
     visibility: parseVisibility(visibility)
