@@ -2,11 +2,52 @@ import { access, readFile, writeFile } from "fs/promises";
 import { glob } from 'glob';
 import path from "path";
 import os from "os";
+import { fileURLToPath } from "url";
 
 import { command } from "./command.js";
 import { unzip } from "./unzip.js";
 
+/**
+ * Shipped with the action, one folder up from both src/ and dist/.
+ */
+export const DEFAULT_ICON = fileURLToPath(new URL("../default_icon.png", import.meta.url));
+
+/**
+ * Workshop visibility values used by `workshop_build_item`.
+ */
+export const VISIBILITY = {
+    public: 0,
+    friends_only: 1,
+    private: 2,
+    unlisted: 3,
+} as const;
+
+/**
+ * Parse a visibility input: a name (`public`, `friends_only`, `private`, `unlisted`) or its number (0-3).
+ * @returns The numeric visibility, or undefined to leave it unchanged.
+ */
+export function parseVisibility(input: string | undefined): number | undefined {
+    const value = input?.trim().toLowerCase().replace(/[\s-]+/g, "_");
+    if (!value) {
+        return undefined;
+    }
+
+    if (value in VISIBILITY) {
+        return VISIBILITY[value as keyof typeof VISIBILITY];
+    }
+
+    const number = Number(value);
+    if (Number.isInteger(number) && Object.values(VISIBILITY).includes(number as never)) {
+        return number;
+    }
+
+    throw new Error(`Invalid visibility "${input}". Use one of: ${Object.keys(VISIBILITY).join(", ")} (or 0-3).`);
+}
+
 export interface PublishOptions {
+    /**
+     * The Workshop item to update. Empty or "0" creates a new item.
+     */
     id?: string;
     appid: string;
 
@@ -16,20 +57,63 @@ export interface PublishOptions {
     icon?: string;
     title?: string;
     /**
-     * The description to upload. This will be converted from Markdown to BBCode.
+     * The description to upload, in Steam BBCode.
      */
     description?: string;
+    /**
+     * See {@link VISIBILITY}. Undefined leaves it unchanged.
+     */
     visibility?: number;
 
     /**
-     * The changelog to upload. This will be converted from Markdown to BBCode.
+     * The change note to upload, in Steam BBCode.
      */
     changelog?: string;
 
     /**
-     * The absolute path to the folder or archive to upload.
+     * The absolute path to the folder to upload.
      */
     folder: string;
+}
+
+/**
+ * Escape a value for a quoted KeyValues (VDF) string.
+ */
+export function escapeVdf(value: string): string {
+    return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/**
+ * Build the `workshop_build_item` VDF for an item.
+ */
+export function workshopItemVdf(options: PublishOptions): string {
+    const fields = new Map<string, string>();
+    fields.set("appid", options.appid);
+    fields.set("contentfolder", options.folder);
+    fields.set("publishedfileid", options.id || "0");
+
+    if (options.changelog) {
+        fields.set("changenote", options.changelog);
+    }
+
+    if (options.icon) {
+        fields.set("previewfile", options.icon);
+    }
+
+    if (options.title) {
+        fields.set("title", options.title);
+    }
+
+    if (options.description) {
+        fields.set("description", options.description);
+    }
+
+    if (options.visibility !== undefined) {
+        fields.set("visibility", options.visibility.toString());
+    }
+
+    const lines = Array.from(fields.entries()).map(([key, value]) => `\t"${key}" "${escapeVdf(value)}"`);
+    return `"workshopitem"\n{\n${lines.join("\n")}\n}`;
 }
 
 export async function location(): Promise<string> {
@@ -43,7 +127,7 @@ export async function location(): Promise<string> {
     throw new Error("Unsupported platform");
 }
 
-export async function publish(username: string, options: PublishOptions): Promise<void> {
+export async function publish(username: string, options: PublishOptions): Promise<string> {
     const steamcmd = await location();
     const exists = await access(steamcmd).then(() => true, () => false);
     if (!exists) {
@@ -62,45 +146,22 @@ export async function publish(username: string, options: PublishOptions): Promis
         throw new Error("Icon must be an absolute path");
     }
 
-    const fields = new Map<string, string>();
-    fields.set("appid", options.appid);
-    fields.set("contentfolder", options.folder);
-    fields.set("publishedfileid", options.id ?? "0");
-
-    if (options.changelog) {
-        fields.set("changenote", options.changelog.replace(/"/g, '\\"'));
-    }
-
-    if (options.icon) {
-        fields.set("previewfile", options.icon);
-    } else {
-        if (!options.id) {
-            fields.set("previewfile", "default_icon.png");
-        }
-    }
-
-    if (options.title) {
-        fields.set("title", options.title);
-    }
-
-    if (options.description) {
-        fields.set("description", options.description.replace(/"/g, '\\"'));
-    }
-
-    if (options.visibility) {
-        fields.set("visibility", options.visibility.toString());
-    }
-
-    const vdf = `"workshopitem"\n{${Array.from(fields.entries()).map(([key, value]) => `\n\t"${key}" "${value}"`).join('')}\n}`;
+    const vdf = workshopItemVdf(options);
 
     console.log(`Generating VDF:\n${vdf}`);
 
-    await writeFile(path.resolve('addon.vdf'), vdf.trim());
+    const file = path.resolve(os.tmpdir(), 'addon.vdf');
+    await writeFile(file, vdf);
 
-    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", path.resolve('addon.vdf'), "+quit");
+    const code = await command(steamcmd, "+@ShutdownOnFailedCommand", "1", "+login", username, "+workshop_build_item", file, "+quit");
     if (code !== 0 && code !== 7) {
         throw new Error("Failed to publish addon");
     }
+
+    // SteamCMD writes the new item's ID back into the VDF after creating it.
+    const written = await readFile(file, "utf-8").catch(() => "");
+    const id = /"publishedfileid"\s+"(\d+)"/i.exec(written)?.[1];
+    return id && id !== "0" ? id : options.id || "";
 }
 
 export async function authenticated(username: string): Promise<boolean> {
