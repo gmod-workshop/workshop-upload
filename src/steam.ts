@@ -77,10 +77,15 @@ export interface PublishOptions {
 }
 
 /**
- * Escape a value for a quoted KeyValues (VDF) string.
+ * Make a value safe for a quoted string in a `workshop_build_item` file.
+ *
+ * SteamCMD reads that file without escape sequences: a value ends at the next `"`, and backslashes are
+ * literal (`\"` fails with "got } in key"). A double quote can't be written at all, so quoted text becomes
+ * typographic quotes ("word" -> “word”) and any other `"` becomes ”. Everything else, backslashes and line
+ * breaks included, is written as is.
  */
-export function escapeVdf(value: string): string {
-    return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+export function vdfString(value: string): string {
+    return value.replace(/"([^"\n]*)"/g, "“$1”").replace(/"/g, "”");
 }
 
 /**
@@ -112,7 +117,7 @@ export function workshopItemVdf(options: PublishOptions): string {
         fields.set("visibility", options.visibility.toString());
     }
 
-    const lines = Array.from(fields.entries()).map(([key, value]) => `\t"${key}" "${escapeVdf(value)}"`);
+    const lines = Array.from(fields.entries()).map(([key, value]) => `\t"${key}" "${vdfString(value)}"`);
     return `"workshopitem"\n{\n${lines.join("\n")}\n}`;
 }
 

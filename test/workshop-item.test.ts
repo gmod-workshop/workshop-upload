@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { existsSync } from "fs";
-import { DEFAULT_ICON, escapeVdf, parseVisibility, workshopItemVdf } from "../src/steam.js";
+import { DEFAULT_ICON, parseVisibility, vdfString, workshopItemVdf } from "../src/steam.js";
 
 describe("parseVisibility", () => {
     test("leaves visibility unchanged when empty", () => {
@@ -29,11 +29,24 @@ describe("parseVisibility", () => {
     });
 });
 
-describe("escapeVdf", () => {
-    test("escapes backslashes and quotes", () => {
-        expect(escapeVdf('say "hi"')).toBe('say \\"hi\\"');
-        expect(escapeVdf("C:\\Users\\runneradmin")).toBe("C:\\\\Users\\\\runneradmin");
-        expect(escapeVdf('\\"')).toBe('\\\\\\"');
+// SteamCMD doesn't read escape sequences in workshop_build_item files, so `\"` breaks parsing.
+describe("vdfString", () => {
+    test("turns quoted text into typographic quotes", () => {
+        expect(vdfString('say "hi" and "bye"')).toBe("say \u201Chi\u201D and \u201Cbye\u201D");
+    });
+
+    test("turns any other double quote into a closing quote", () => {
+        expect(vdfString('12" vinyl')).toBe("12\u201D vinyl");
+        expect(vdfString('"open\nline')).toBe("\u201Dopen\nline");
+    });
+
+    test("never leaves a double quote", () => {
+        expect(vdfString('a"b"c"d\\"')).not.toContain('"');
+    });
+
+    test("writes backslashes and line breaks as is", () => {
+        expect(vdfString("C:\\Temp\\new\\test")).toBe("C:\\Temp\\new\\test");
+        expect(vdfString("Line 1\nLine 2")).toBe("Line 1\nLine 2");
     });
 });
 
@@ -56,7 +69,7 @@ describe("workshopItemVdf", () => {
         }
     });
 
-    test("escapes every value", () => {
+    test("makes every value safe", () => {
         const vdf = workshopItemVdf({
             appid: "4000",
             id: "123",
@@ -67,11 +80,15 @@ describe("workshopItemVdf", () => {
             changelog: 'Fixed "quotes"',
         });
 
-        expect(vdf).toContain('"contentfolder" "C:\\\\Temp\\\\addon"');
-        expect(vdf).toContain('"previewfile" "C:\\\\Temp\\\\icon.png"');
-        expect(vdf).toContain('"title" "The \\"Best\\" Addon"');
-        expect(vdf).toContain('"description" "Line 1\nLine 2 with a \\\\ backslash"');
-        expect(vdf).toContain('"changenote" "Fixed \\"quotes\\""');
+        expect(vdf).toContain('"contentfolder" "C:\\Temp\\addon"');
+        expect(vdf).toContain('"previewfile" "C:\\Temp\\icon.png"');
+        expect(vdf).toContain('"title" "The \u201CBest\u201D Addon"');
+        expect(vdf).toContain('"description" "Line 1\nLine 2 with a \\ backslash"');
+        expect(vdf).toContain('"changenote" "Fixed \u201Cquotes\u201D"');
+        // Every line is "key" "value": exactly four double quotes.
+        for (const line of vdf.split("\n").filter((l) => l.startsWith("\t\"") && !l.includes("description"))) {
+            expect(line.match(/"/g)).toHaveLength(4);
+        }
     });
 });
 
